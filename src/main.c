@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	};
 	
 	uint8_t program[] = { 0xa9, 0xc0, 0xaa, 0xe8, 0x00 };
-	memcpy(bus->cpu_ram, program, sizeof(program));
+	cpu_load_program(&cpu, program, sizeof(program));
 	
 	cpu_run(&cpu);
 

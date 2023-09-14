@@ -1,9 +1,12 @@
 #ifndef __cnes_cpu_h__
 #define __cnes_cpu_h__
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "bus.h"
+
+#define INSTRUCTION_COUNT 256
 
 
 typedef enum cpu_status_flag_t {
@@ -37,8 +40,11 @@ typedef struct cpu_instruction_t {
 	cpu_instruction_func_t func;
 } cpu_instruction_t;
 
-extern const cpu_instruction_t INSTRUCTIONS[0xFF];
+extern const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT];
 
+void cpu_load_program(cpu_t *cpu, uint8_t *program, size_t size);
+
+void cpu_reset(cpu_t *cpu);
 void cpu_run(cpu_t *cpu);
 
 
