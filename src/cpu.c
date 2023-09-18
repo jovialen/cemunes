@@ -73,6 +73,22 @@ static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
   }
 }
 
+static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t b = cpu_mem_read(cpu, mode) + (cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
+  uint8_t c = cpu->registers.a + b;
+  
+  if (cpu->registers.a > c) {
+    cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
+  } else {
+    cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+  }
+
+  cpu->registers.a = c;
+  update_negative_zero_registers(cpu, c);
+}
+
+#define ADC_INSTRUCTION(MODE) CPU_INSTRUCTION(adc, MODE)
+
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.a);
@@ -108,6 +124,15 @@ static uint8_t fetch_op(cpu_t *cpu) {
 
 const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x00] = BRK_INSTRUCTION(),
+
+  [0x69] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0x65] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x75] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x6d] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x7d] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x79] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+  [0x61] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0x71] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
   
   [0xa9] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0xa5] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
