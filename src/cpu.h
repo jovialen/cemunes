@@ -9,6 +9,21 @@
 #define INSTRUCTION_COUNT 256
 
 
+typedef enum cpu_addressing_mode_t {
+	CPU_ADDRESSING_MODE_IMPLIED = 0,
+	CPU_ADDRESSING_MODE_ACCUMULATOR,
+	CPU_ADDRESSING_MODE_IMMEDIATE,
+	CPU_ADDRESSING_MODE_RELATIVE,
+	CPU_ADDRESSING_MODE_ABSOLUTE,
+	CPU_ADDRESSING_MODE_ABSOLUTE_X,
+	CPU_ADDRESSING_MODE_ABSOLUTE_Y,
+	CPU_ADDRESSING_MODE_ZERO_PAGE,
+	CPU_ADDRESSING_MODE_ZERO_PAGE_X,
+	CPU_ADDRESSING_MODE_ZERO_PAGE_Y,
+	CPU_ADDRESSING_MODE_INDIRECT_X,
+	CPU_ADDRESSING_MODE_INDIRECT_Y,
+} cpu_addressing_mode_t;
+
 typedef enum cpu_status_flag_t {
 	CPU_STATUS_FLAG_CARRY       = (1 << 0),
 	CPU_STATUS_FLAG_ZERO        = (1 << 1),
@@ -33,11 +48,12 @@ typedef struct cpu_t {
 	bus_t *bus;
 } cpu_t;
 
-typedef void(*cpu_instruction_func_t)(cpu_t *);
+typedef void(*cpu_instruction_func_t)(cpu_t *, cpu_addressing_mode_t);
 
 typedef struct cpu_instruction_t {
 	const char *name;
 	cpu_instruction_func_t func;
+	cpu_addressing_mode_t addr_mode;
 } cpu_instruction_t;
 
 extern const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT];
