@@ -89,6 +89,14 @@ static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define ADC_INSTRUCTION(MODE) CPU_INSTRUCTION(adc, MODE)
 
+static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t m = cpu_mem_read(cpu, mode);
+  cpu->registers.a &= m;
+  update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define AND_INSTRUCTION(MODE) CPU_INSTRUCTION(and, MODE)
+
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.a);
@@ -133,6 +141,15 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x79] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
   [0x61] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x71] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+
+  [0x29] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0x25] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x35] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x2d] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x3d] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x39] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+  [0x21] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0x31] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
   
   [0xa9] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0xa5] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
