@@ -54,6 +54,11 @@ static uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode) {
   return bus_mem_read_u8(cpu->bus, address);
 }
 
+static void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
+  uint16_t address = get_address(cpu, mode, NULL);
+  bus_mem_write_u8(cpu->bus, address, value);
+}
+
 static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
   if (a == 0) {
     cpu->registers.flags |= CPU_STATUS_FLAG_ZERO;
@@ -74,6 +79,12 @@ static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
 }
 
 #define LDA_INSTRUCTION(MODE) CPU_INSTRUCTION(lda, MODE)
+
+static void sta(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu_mem_write(cpu, mode, cpu->registers.a);
+}
+
+#define STA_INSTRUCTION(MODE) CPU_INSTRUCTION(sta, MODE)
 
 static void tax(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.x = cpu->registers.a;
@@ -97,6 +108,7 @@ static uint8_t fetch_op(cpu_t *cpu) {
 
 const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x00] = BRK_INSTRUCTION(),
+  
   [0xa9] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0xa5] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
   [0xb5] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
@@ -105,6 +117,15 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xad] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0xbd] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   [0xb9] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+  
+  [0x85] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x95] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x8d] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x9d] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x99] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+  [0x81] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0x91] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  
   [0xaa] = TAX_INSTRUCTION(),
   [0xe8] = INX_INSTRUCTION(),
 };
