@@ -143,6 +143,12 @@ static void bvs(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define BVS_INSTRUCTION() CPU_INSTRUCTION(bvs, CPU_ADDRESSING_MODE_RELATIVE)
 
+static void jmp(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.pc = cpu_mem_read(cpu, mode);
+}
+
+#define JMP_INSTRUCTION(MODE) CPU_INSTRUCTION(bvs, MODE)
+
 static void cld(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_DECIMAL;
 }
@@ -345,6 +351,9 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x59] = EOR_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
   [0x41] = EOR_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x51] = EOR_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+
+  [0x4c] = JMP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x6c] = JMP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT),
   
   [0x90] = BCC_INSTRUCTION(),
   [0xb0] = BCS_INSTRUCTION(),
