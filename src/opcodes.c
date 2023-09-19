@@ -143,6 +143,24 @@ static void bvs(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define BVS_INSTRUCTION() CPU_INSTRUCTION(bvs, CPU_ADDRESSING_MODE_RELATIVE)
 
+static void cld(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags &= ~CPU_STATUS_FLAG_DECIMAL;
+}
+
+#define CLD_INSTRUCTION() CPU_INSTRUCTION(cld, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void cli(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags &= ~CPU_STATUS_FLAG_INT_DISABLE;
+}
+
+#define CLI_INSTRUCTION() CPU_INSTRUCTION(cli, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void clv(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+}
+
+#define CLV_INSTRUCTION() CPU_INSTRUCTION(clv, CPU_ADDRESSING_MODE_IMPLIED)
+
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.a);
@@ -227,7 +245,12 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x70] = BVS_INSTRUCTION(),
   
   [0x18] = CLC_INSTRUCTION(),
+  [0xd8] = CLD_INSTRUCTION(),
+  [0x58] = CLI_INSTRUCTION(),
+  [0xb8] = CLV_INSTRUCTION(),
+  
   [0x38] = SEC_INSTRUCTION(),
+  
   [0xaa] = TAX_INSTRUCTION(),
   [0xe8] = INX_INSTRUCTION(),
 };
