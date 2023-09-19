@@ -17,6 +17,10 @@ void bus_free(bus_t *bus) {
 	free(bus);
 }
 
+uint8_t *bus_mem_addr(bus_t *bus, uint16_t address) {
+	return &bus->memory[address];
+}
+
 void bus_mem_read(bus_t *bus, uint16_t address, uint8_t *dst, size_t size) {
 	memcpy(dst, bus_address(bus, address), size);
 }

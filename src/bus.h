@@ -15,6 +15,7 @@ typedef struct bus_t {
 bus_t *bus_new();
 void bus_free(bus_t *bus);
 
+uint8_t *bus_mem_addr(bus_t *bus, uint16_t address);
 void bus_mem_read(bus_t *bus, uint16_t address, uint8_t *dst, size_t size);
 void bus_mem_write(bus_t *bus, uint16_t address, uint8_t *src, size_t size);
 

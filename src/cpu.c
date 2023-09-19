@@ -47,16 +47,23 @@ static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode, uint16_t *by
   }
 }
 
-static uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint16_t bytes = 0;
+static uint8_t *cpu_mem_addr(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  if (mode == CPU_ADDRESSING_MODE_ACCUMULATOR) {
+    return &cpu->registers.a;
+  }
+  
+  uint16_t bytes;
   uint16_t address = get_address(cpu, mode, &bytes);
   cpu->registers.pc += bytes;
-  return bus_mem_read_u8(cpu->bus, address);
+  return bus_mem_addr(cpu->bus, address);
+}
+
+static uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  return *cpu_mem_addr(cpu, mode);
 }
 
 static void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
-  uint16_t address = get_address(cpu, mode, NULL);
-  bus_mem_write_u8(cpu->bus, address, value);
+  *cpu_mem_addr(cpu, mode) = value;
 }
 
 static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
@@ -72,6 +79,18 @@ static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
     cpu->registers.flags |= CPU_STATUS_FLAG_NEGATIVE;
   }
 }
+
+static void sec(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags |= CPU_STATUS_FLAG_CARRY;
+}
+
+#define SEC_INSTRUCTION() CPU_INSTRUCTION(sec, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void clc(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags &= ~CPU_STATUS_FLAG_CARRY;
+}
+
+#define CLC_INSTRUCTION() CPU_INSTRUCTION(clc, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t b = cpu_mem_read(cpu, mode) + (cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
@@ -96,6 +115,22 @@ static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
 }
 
 #define AND_INSTRUCTION(MODE) CPU_INSTRUCTION(and, MODE)
+
+static void asl(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *byte = cpu_mem_addr(cpu, mode);
+
+  if (*byte & (1 << 7)) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  *byte <<= 1;
+  
+  update_negative_zero_registers(cpu, *byte);
+}
+
+#define ASL_INSTRUCTION(MODE) CPU_INSTRUCTION(asl, MODE)
 
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
@@ -150,6 +185,12 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x39] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
   [0x21] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x31] = AND_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+
+  [0x0a] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ACCUMULATOR),
+  [0x06] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x16] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x0e] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x1e] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   
   [0xa9] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0xa5] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
@@ -168,6 +209,8 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x81] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x91] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
   
+  [0x18] = CLC_INSTRUCTION(),
+  [0x38] = SEC_INSTRUCTION(),
   [0xaa] = TAX_INSTRUCTION(),
   [0xe8] = INX_INSTRUCTION(),
 };
