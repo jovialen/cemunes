@@ -211,6 +211,28 @@ static void tax(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define TAX_INSTRUCTION() CPU_INSTRUCTION(tax, CPU_ADDRESSING_MODE_IMPLIED)
 
+static void dec(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *addr = cpu_mem_addr(cpu, mode);
+  (*addr)--;
+  update_negative_zero_registers(cpu, *addr);
+}
+
+#define DEC_INSTRUCTION(MODE) CPU_INSTRUCTION(dec, MODE)
+
+static void dex(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.x--;
+  update_negative_zero_registers(cpu, cpu->registers.x);
+}
+
+#define DEX_INSTRUCTION() CPU_INSTRUCTION(dex, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void dey(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.y--;
+  update_negative_zero_registers(cpu, cpu->registers.y);
+}
+
+#define DEY_INSTRUCTION() CPU_INSTRUCTION(dey, CPU_ADDRESSING_MODE_IMPLIED)
+
 static void inx(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.x++;
   update_negative_zero_registers(cpu, cpu->registers.x);
@@ -281,6 +303,11 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xc0] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0xc4] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
   [0xcc] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+
+  [0xc6] = DEC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xd6] = DEC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0xce] = DEC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xde] = DEC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   
   [0x90] = BCC_INSTRUCTION(),
   [0xb0] = BCS_INSTRUCTION(),
@@ -298,6 +325,10 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   
   [0x38] = SEC_INSTRUCTION(),
   
-  [0xaa] = TAX_INSTRUCTION(),
+  [0xca] = DEX_INSTRUCTION(),
+  [0x88] = DEY_INSTRUCTION(),
+  
   [0xe8] = INX_INSTRUCTION(),
+  
+  [0xaa] = TAX_INSTRUCTION(),
 };
