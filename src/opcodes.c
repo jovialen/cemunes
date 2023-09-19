@@ -71,14 +71,30 @@ static void asl(cpu_t *cpu, cpu_addressing_mode_t mode) {
   update_negative_zero_registers(cpu, *byte);
 }
 
+#define ASL_INSTRUCTION(MODE) CPU_INSTRUCTION(asl, MODE)
+
+static void lsr(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *byte = cpu_mem_addr(cpu, mode);
+
+  if (*byte & 0b1) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  *byte >>= 1;
+
+  update_negative_zero_registers(cpu, *byte);
+}
+
+#define LSR_INSTRUCTION(MODE) CPU_INSTRUCTION(lsr, MODE)
+
 static void branch(cpu_t *cpu, bool condition) {
   uint8_t jump = cpu_mem_read(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
   if (condition) {
     cpu->registers.pc += jump;
   }
 }
-
-#define ASL_INSTRUCTION(MODE) CPU_INSTRUCTION(asl, MODE)
 
 static void bcc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   branch(cpu, !(cpu->registers.flags & CPU_STATUS_FLAG_CARRY));
@@ -309,6 +325,11 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x16] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
   [0x0e] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0x1e] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x4a] = LSR_INSTRUCTION(CPU_ADDRESSING_MODE_ACCUMULATOR),
+  [0x46] = LSR_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x56] = LSR_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x4e] = LSR_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x5e] = LSR_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   
   [0xa9] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0xa5] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
