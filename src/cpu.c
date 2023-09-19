@@ -1,6 +1,7 @@
 #include "cpu.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "bus.h"
 
@@ -130,7 +131,32 @@ static void asl(cpu_t *cpu, cpu_addressing_mode_t mode) {
   update_negative_zero_registers(cpu, *byte);
 }
 
+static void branch(cpu_t *cpu, bool condition) {
+  uint8_t jump = cpu_mem_read(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
+  if (condition) {
+    cpu->registers.pc += jump;
+  }
+}
+
 #define ASL_INSTRUCTION(MODE) CPU_INSTRUCTION(asl, MODE)
+
+static void bcc(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  branch(cpu, !(cpu->registers.flags & CPU_STATUS_FLAG_CARRY));
+}
+
+#define BCC_INSTRUCTION() CPU_INSTRUCTION(bcc, CPU_ADDRESSING_MODE_RELATIVE)
+
+static void bcs(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  branch(cpu, cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
+}
+
+#define BCS_INSTRUCTION() CPU_INSTRUCTION(bcs, CPU_ADDRESSING_MODE_RELATIVE)
+
+static void beq(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  branch(cpu, cpu->registers.flags & CPU_STATUS_FLAG_ZERO);
+}
+
+#define BEQ_INSTRUCTION() CPU_INSTRUCTION(beq, CPU_ADDRESSING_MODE_RELATIVE)
 
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
@@ -211,6 +237,9 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   
   [0x18] = CLC_INSTRUCTION(),
   [0x38] = SEC_INSTRUCTION(),
+  [0x90] = BCC_INSTRUCTION(),
+  [0xb0] = BCS_INSTRUCTION(),
+  [0xf0] = BEQ_INSTRUCTION(),
   [0xaa] = TAX_INSTRUCTION(),
   [0xe8] = INX_INSTRUCTION(),
 };
