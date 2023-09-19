@@ -113,6 +113,24 @@ static void bit(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define BIT_INSTRUCTION(MODE) CPU_INSTRUCTION(bit, MODE)
 
+static void bmi(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  branch(cpu, cpu->registers.flags & CPU_STATUS_FLAG_NEGATIVE);
+}
+
+#define BMI_INSTRUCTION() CPU_INSTRUCTION(bmi, CPU_ADDRESSING_MODE_RELATIVE)
+
+static void bne(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  branch(cpu, !(cpu->registers.flags & CPU_STATUS_FLAG_ZERO));
+}
+
+#define BNE_INSTRUCTION() CPU_INSTRUCTION(bne, CPU_ADDRESSING_MODE_RELATIVE)
+
+static void bpl(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  branch(cpu, !(cpu->registers.flags & CPU_STATUS_FLAG_NEGATIVE));
+}
+
+#define BPL_INSTRUCTION() CPU_INSTRUCTION(bpl, CPU_ADDRESSING_MODE_RELATIVE)
+
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.a);
@@ -187,11 +205,15 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
 	[0x24] = BIT_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
 	[0x2c] = BIT_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   
-  [0x18] = CLC_INSTRUCTION(),
-  [0x38] = SEC_INSTRUCTION(),
   [0x90] = BCC_INSTRUCTION(),
   [0xb0] = BCS_INSTRUCTION(),
   [0xf0] = BEQ_INSTRUCTION(),
+  [0x30] = BMI_INSTRUCTION(),
+  [0xd0] = BNE_INSTRUCTION(),
+  [0x10] = BPL_INSTRUCTION(),
+  
+  [0x18] = CLC_INSTRUCTION(),
+  [0x38] = SEC_INSTRUCTION(),
   [0xaa] = TAX_INSTRUCTION(),
   [0xe8] = INX_INSTRUCTION(),
 };
