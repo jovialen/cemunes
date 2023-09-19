@@ -31,6 +31,15 @@ static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode, uint16_t *by
   case CPU_ADDRESSING_MODE_ABSOLUTE_Y:
     *bytes = 2;
     return bus_mem_read_u16(cpu->bus, cpu->registers.pc) + cpu->registers.y;
+  case CPU_ADDRESSING_MODE_INDIRECT:
+    *bytes = 2;
+    uint16_t addr = bus_mem_read_u16(cpu->bus, cpu->registers.pc);
+    if ((addr & 0xFF) == 0xFF) {
+      uint16_t low = (uint16_t) bus_mem_read_u8(cpu->bus, addr);
+      uint16_t high = (uint16_t) bus_mem_read_u8(cpu->bus, addr & 0xFF00);
+      return high << 8 | low;
+    }
+    return bus_mem_read_u16(cpu->bus, addr);
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
     uint8_t addr = bus_mem_read_u16(cpu->bus, cpu->registers.pc) + cpu->registers.x;
     return bus_mem_read_u16(cpu->bus, addr);
