@@ -204,6 +204,20 @@ static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define LDA_INSTRUCTION(MODE) CPU_INSTRUCTION(lda, MODE)
 
+static void ldx(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.x = cpu_mem_read(cpu, mode);
+  update_negative_zero_registers(cpu, cpu->registers.x);
+}
+
+#define LDX_INSTRUCTION(MODE) CPU_INSTRUCTION(ldx, MODE)
+
+static void ldy(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.y = cpu_mem_read(cpu, mode);
+  update_negative_zero_registers(cpu, cpu->registers.y);
+}
+
+#define LDY_INSTRUCTION(MODE) CPU_INSTRUCTION(ldy, MODE)
+
 static void sta(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu_mem_write(cpu, mode, cpu->registers.a);
 }
@@ -304,6 +318,16 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xad] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0xbd] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   [0xb9] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+  [0xa2] = LDX_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0xa6] = LDX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xb6] = LDX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0xae] = LDX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xbe] = LDX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0xa0] = LDY_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0xa4] = LDY_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xb4] = LDY_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0xac] = LDY_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xbc] = LDY_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   
   [0x85] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
   [0x95] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
