@@ -233,12 +233,27 @@ static void dey(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define DEY_INSTRUCTION() CPU_INSTRUCTION(dey, CPU_ADDRESSING_MODE_IMPLIED)
 
+static void inc(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *addr = cpu_mem_addr(cpu, mode);
+  (*addr)++;
+  update_negative_zero_registers(cpu, *addr);
+}
+
+#define INC_INSTRUCTION(MODE) CPU_INSTRUCTION(inc, MODE)
+
 static void inx(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.x++;
   update_negative_zero_registers(cpu, cpu->registers.x);
 }
 
 #define INX_INSTRUCTION() CPU_INSTRUCTION(inx, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void iny(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.y++;
+  update_negative_zero_registers(cpu, cpu->registers.y);
+}
+
+#define INY_INSTRUCTION() CPU_INSTRUCTION(inx, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void eor(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read(cpu, mode);
@@ -317,6 +332,11 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xce] = DEC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0xde] = DEC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
 
+  [0xe6] = INC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xf6] = INC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0xee] = INC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xfe] = INC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+
   [0x49] = EOR_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0x45] = EOR_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
   [0x55] = EOR_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
@@ -344,8 +364,8 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   
   [0xca] = DEX_INSTRUCTION(),
   [0x88] = DEY_INSTRUCTION(),
-  
   [0xe8] = INX_INSTRUCTION(),
+  [0xc8] = INY_INSTRUCTION(),
   
   [0xaa] = TAX_INSTRUCTION(),
 };
