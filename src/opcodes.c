@@ -161,6 +161,36 @@ static void clv(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define CLV_INSTRUCTION() CPU_INSTRUCTION(clv, CPU_ADDRESSING_MODE_IMPLIED)
 
+static void compare(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t a) {
+  uint8_t m = cpu_mem_read(cpu, mode);
+
+  if (a >= m) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  update_negative_zero_registers(cpu, a - m);
+}
+
+static void cmp(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  compare(cpu, mode, cpu->registers.a);
+}
+
+#define CMP_INSTRUCTION(MODE) CPU_INSTRUCTION(cmp, MODE)
+
+static void cmx(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  compare(cpu, mode, cpu->registers.x);
+}
+
+#define CMX_INSTRUCTION(MODE) CPU_INSTRUCTION(cmx, MODE)
+
+static void cmy(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  compare(cpu, mode, cpu->registers.y);
+}
+
+#define CMY_INSTRUCTION(MODE) CPU_INSTRUCTION(cmy, MODE)
+
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.a);
@@ -234,6 +264,23 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
 
 	[0x24] = BIT_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
 	[0x2c] = BIT_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+
+  [0xc9] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0xc5] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xd5] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0xcd] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xdd] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0xd9] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+  [0xc1] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0xd1] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+
+  [0xe0] = CMX_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0xe4] = CMX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xec] = CMX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  
+  [0xc0] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0xc4] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xcc] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   
   [0x90] = BCC_INSTRUCTION(),
   [0xb0] = BCS_INSTRUCTION(),
