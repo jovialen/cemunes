@@ -98,6 +98,21 @@ static void beq(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define BEQ_INSTRUCTION() CPU_INSTRUCTION(beq, CPU_ADDRESSING_MODE_RELATIVE)
 
+static void bit(cpu_t *cpu, cpu_addressing_mode_t mode) {
+	uint8_t m = cpu_mem_read(cpu, mode);
+	cpu->registers.a &= m;
+
+	if (m & (1 << 6)) {
+		cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
+	} else {
+		cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+	}
+	
+	update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define BIT_INSTRUCTION(MODE) CPU_INSTRUCTION(bit, MODE)
+
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.a);
@@ -168,6 +183,9 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x99] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
   [0x81] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x91] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+
+	[0x24] = BIT_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+	[0x2c] = BIT_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   
   [0x18] = CLC_INSTRUCTION(),
   [0x38] = SEC_INSTRUCTION(),
