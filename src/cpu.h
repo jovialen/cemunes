@@ -58,6 +58,10 @@ typedef struct cpu_instruction_t {
 
 extern const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT];
 
+uint8_t *cpu_mem_addr(cpu_t *cpu, cpu_addressing_mode_t mode);
+uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode);
+void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value);
+
 void cpu_load_program(cpu_t *cpu, uint8_t *program, size_t size);
 
 void cpu_reset(cpu_t *cpu);
