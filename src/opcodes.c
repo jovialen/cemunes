@@ -89,6 +89,40 @@ static void lsr(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define LSR_INSTRUCTION(MODE) CPU_INSTRUCTION(lsr, MODE)
 
+static void rol(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *byte = cpu_mem_addr(cpu, mode);
+  uint8_t carry = cpu->registers.flags & CPU_STATUS_FLAG_CARRY ? 0b1 : 0;
+
+  if (*byte & (0b1 << 7)) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  *byte = (*byte << 1) | carry;
+
+  update_negative_zero_registers(cpu, *byte);
+}
+
+#define ROL_INSTRUCTION(MODE) CPU_INSTRUCTION(rol, MODE)
+
+static void ror(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *byte = cpu_mem_addr(cpu, mode);
+  uint8_t carry = cpu->registers.flags & CPU_STATUS_FLAG_CARRY ? 0b1 << 7 : 0;
+
+  if (*byte & 0b1) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  *byte = (*byte >> 1) | carry;
+
+  update_negative_zero_registers(cpu, *byte);
+}
+
+#define ROR_INSTRUCTION(MODE) CPU_INSTRUCTION(ror, MODE)
+
 static void branch(cpu_t *cpu, bool condition) {
   uint8_t jump = cpu_mem_read(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
   if (condition) {
@@ -330,6 +364,16 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x56] = LSR_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
   [0x4e] = LSR_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0x5e] = LSR_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x2a] = ROL_INSTRUCTION(CPU_ADDRESSING_MODE_ACCUMULATOR),
+  [0x26] = ROL_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x36] = ROL_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x2e] = ROL_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x3e] = ROL_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x6a] = ROR_INSTRUCTION(CPU_ADDRESSING_MODE_ACCUMULATOR),
+  [0x66] = ROR_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x76] = ROR_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x6e] = ROR_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x7e] = ROR_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   
   [0xa9] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0xa5] = LDA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
