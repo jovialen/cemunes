@@ -130,10 +130,16 @@ void cpu_reset(cpu_t *cpu) {
 
 void cpu_run(cpu_t *cpu) {
   cpu_reset(cpu);
-  for (uint8_t op = fetch_op(cpu); op != 0; op = fetch_op(cpu)) {
-    const cpu_instruction_t *instruction = &INSTRUCTIONS[op];
-    if (instruction->func) {
-      instruction->func(cpu, instruction->addr_mode);
-    }
+  while (cpu_step(cpu));
+}
+
+uint8_t cpu_step(cpu_t *cpu) {
+  uint8_t op = fetch_op(cpu);
+  const cpu_instruction_t *instruction = &INSTRUCTIONS[op];
+
+  if (instruction->func) {
+    instruction->func(cpu, instruction->addr_mode);
   }
+
+  return op;
 }

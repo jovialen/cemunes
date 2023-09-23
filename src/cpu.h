@@ -8,7 +8,6 @@
 
 #define INSTRUCTION_COUNT 256
 #define STACK_START_ADDR 0x100
-#define PROGRAM_START_ARRD 0x0600
 
 
 typedef enum cpu_addressing_mode_t {
@@ -75,6 +74,7 @@ void cpu_load_program(cpu_t *cpu, const uint8_t *program, size_t size);
 
 void cpu_reset(cpu_t *cpu);
 void cpu_run(cpu_t *cpu);
+uint8_t cpu_step(cpu_t *cpu);
 
 
 #endif /* __cnes_cpu_h__ */
