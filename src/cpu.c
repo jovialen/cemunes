@@ -59,6 +59,13 @@ static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode, uint16_t *by
   }
 }
 
+uint16_t cpu_read_address(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint16_t bytes;
+  uint16_t address = get_address(cpu, mode, &bytes);
+  cpu->registers.pc += bytes;
+  return address;
+}
+
 uint8_t *cpu_mem_addr(cpu_t *cpu, cpu_addressing_mode_t mode) {
   if (mode == CPU_ADDRESSING_MODE_ACCUMULATOR) {
     return &cpu->registers.a;
@@ -78,7 +85,7 @@ void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
   *cpu_mem_addr(cpu, mode) = value;
 }
 
-void cpu_stack_push(cpu_t *cpu, uint8_t value) {
+void cpu_stack_push_u8(cpu_t *cpu, uint8_t value) {
   if (cpu->registers.s == 0xFF) {
     printf("error: stack overflow");
     return;
@@ -88,7 +95,7 @@ void cpu_stack_push(cpu_t *cpu, uint8_t value) {
   cpu->registers.s++;
 }
 
-uint8_t cpu_stack_pop(cpu_t *cpu) {
+uint8_t cpu_stack_pop_u8(cpu_t *cpu) {
   if (cpu->registers.s == 0) {
     printf("error: stack underflow");
     return 0;
@@ -96,6 +103,19 @@ uint8_t cpu_stack_pop(cpu_t *cpu) {
   
   cpu->registers.s--;
   return bus_mem_read_u8(cpu->bus, STACK_START_ADDR + cpu->registers.s);
+}
+
+void cpu_stack_push_u16(cpu_t *cpu, uint16_t value) {
+	uint8_t low = value & 0xFF;
+	uint8_t high = (value >> 8) & 0xFF;
+  cpu_stack_push_u8(cpu, high);
+  cpu_stack_push_u8(cpu, low);
+}
+
+uint16_t cpu_stack_pop_u16(cpu_t *cpu) {
+  uint16_t low  = (uint16_t) cpu_stack_pop_u8(cpu);
+  uint16_t high = (uint16_t) cpu_stack_pop_u8(cpu);
+  return (high << 8) | low;
 }
 
 void cpu_load_program(cpu_t *cpu, uint8_t *program, size_t size) {
