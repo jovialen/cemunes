@@ -370,6 +370,20 @@ static void tya(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define TYA_INSTRUCTION() CPU_INSTRUCTION(tya, CPU_ADDRESSING_MODE_IMPLIED)
 
+static void tsx(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.x = cpu->registers.s;
+  update_negative_zero_registers(cpu, cpu->registers.x);
+}
+
+#define TSX_INSTRUCTION() CPU_INSTRUCTION(tsx, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void txs(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.s = cpu->registers.x;
+  update_negative_zero_registers(cpu, cpu->registers.s);
+}
+
+#define TXS_INSTRUCTION() CPU_INSTRUCTION(txs, CPU_ADDRESSING_MODE_IMPLIED)
+
 static void dec(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t *addr = cpu_mem_addr(cpu, mode);
   (*addr)--;
@@ -594,4 +608,6 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xa8] = TAY_INSTRUCTION(),
   [0x8a] = TXA_INSTRUCTION(),
   [0x98] = TYA_INSTRUCTION(),
+  [0xba] = TSX_INSTRUCTION(),
+  [0x9a] = TXS_INSTRUCTION(),
 };
