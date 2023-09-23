@@ -315,6 +315,18 @@ static void sta(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define STA_INSTRUCTION(MODE) CPU_INSTRUCTION(sta, MODE)
 
+static void stx(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu_mem_write(cpu, mode, cpu->registers.x);
+}
+
+#define STX_INSTRUCTION(MODE) CPU_INSTRUCTION(stx, MODE)
+
+static void sty(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu_mem_write(cpu, mode, cpu->registers.y);
+}
+
+#define STY_INSTRUCTION(MODE) CPU_INSTRUCTION(sty, MODE)
+
 static void tax(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.x = cpu->registers.a;
   update_negative_zero_registers(cpu, cpu->registers.x);
@@ -450,6 +462,12 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x99] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
   [0x81] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x91] = STA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  [0x86] = STX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x96] = STX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x8e] = STX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x84] = STY_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x94] = STY_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x8c] = STY_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   
   [0x24] = BIT_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
   [0x2c] = BIT_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
