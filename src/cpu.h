@@ -76,5 +76,7 @@ void cpu_reset(cpu_t *cpu);
 void cpu_run(cpu_t *cpu);
 uint8_t cpu_step(cpu_t *cpu);
 
+void cpu_trace(cpu_t *cpu);
+
 
 #endif /* __cnes_cpu_h__ */
