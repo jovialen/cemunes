@@ -35,19 +35,48 @@ static void clc(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t b = cpu_mem_read(cpu, mode) + (cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
-  uint8_t c = cpu->registers.a + b;
+  uint8_t new_a = cpu->registers.a + b;
   
-  if (cpu->registers.a > c) {
+  if (cpu->registers.a > new_a) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  if ((b ^ cpu->registers.a) & (b ^ new_a) & 0x80) {
     cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
   } else {
     cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
   }
 
-  cpu->registers.a = c;
-  update_negative_zero_registers(cpu, c);
+  cpu->registers.a = new_a;
+  update_negative_zero_registers(cpu, new_a);
 }
 
 #define ADC_INSTRUCTION(MODE) CPU_INSTRUCTION(adc, MODE)
+
+static void sbc(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t b = cpu_mem_read(cpu, mode) + ~(cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
+
+  if (cpu->registers.a < b) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+  
+  uint8_t new_a = cpu->registers.a - b;
+
+  if ((b ^ cpu->registers.a) & (b ^ new_a) & 0x80) {
+    cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
+  } else {
+    cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+  }
+
+  cpu->registers.a -= new_a;
+  update_negative_zero_registers(cpu, new_a);
+}
+
+#define SBC_INSTRUCTION(MODE) CPU_INSTRUCTION(sbc, MODE)
 
 static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read(cpu, mode);
@@ -353,6 +382,14 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x79] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
   [0x61] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x71] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  [0xe9] = SBC_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0xe5] = SBC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xf5] = SBC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0xed] = SBC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xfd] = SBC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0xf9] = SBC_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+  [0xe1] = SBC_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0xf1] = SBC_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
 
   [0x0a] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ACCUMULATOR),
   [0x06] = ASL_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
