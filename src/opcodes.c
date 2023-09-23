@@ -334,6 +334,27 @@ static void tax(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define TAX_INSTRUCTION() CPU_INSTRUCTION(tax, CPU_ADDRESSING_MODE_IMPLIED)
 
+static void tay(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.y = cpu->registers.a;
+  update_negative_zero_registers(cpu, cpu->registers.y);
+}
+
+#define TAY_INSTRUCTION() CPU_INSTRUCTION(tay, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void txa(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.a = cpu->registers.x;
+  update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define TXA_INSTRUCTION() CPU_INSTRUCTION(txa, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void tya(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.a = cpu->registers.y;
+  update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define TYA_INSTRUCTION() CPU_INSTRUCTION(tya, CPU_ADDRESSING_MODE_IMPLIED)
+
 static void dec(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t *addr = cpu_mem_addr(cpu, mode);
   (*addr)--;
@@ -553,4 +574,7 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xc8] = INY_INSTRUCTION(),
   
   [0xaa] = TAX_INSTRUCTION(),
+  [0xa8] = TAY_INSTRUCTION(),
+  [0x8a] = TXA_INSTRUCTION(),
+  [0x98] = TYA_INSTRUCTION(),
 };
