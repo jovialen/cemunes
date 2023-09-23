@@ -118,9 +118,9 @@ uint16_t cpu_stack_pop_u16(cpu_t *cpu) {
   return (high << 8) | low;
 }
 
-void cpu_load_program(cpu_t *cpu, uint8_t *program, size_t size) {
-  bus_mem_write(cpu->bus, 0x8000, program, size);
-  bus_mem_write_u16(cpu->bus, RESET_VECTOR, 0x8000);
+void cpu_load_program(cpu_t *cpu, const uint8_t *program, size_t size) {
+  bus_mem_write(cpu->bus, PROGRAM_START_ADDR, program, size);
+  bus_mem_write_u16(cpu->bus, RESET_VECTOR, PROGRAM_START_ADDR);
 }
 
 void cpu_reset(cpu_t *cpu) {
@@ -132,6 +132,8 @@ void cpu_run(cpu_t *cpu) {
   cpu_reset(cpu);
   for (uint8_t op = fetch_op(cpu); op != 0; op = fetch_op(cpu)) {
     const cpu_instruction_t *instruction = &INSTRUCTIONS[op];
-    instruction->func(cpu, instruction->addr_mode);
+    if (instruction->func) {
+      instruction->func(cpu, instruction->addr_mode);
+    }
   }
 }

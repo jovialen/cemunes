@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define BUS_MEM_SIZE 0x10000
+#define PROGRAM_START_ADDR 0x0600
 #define RESET_VECTOR 0xFFFC
 
 
@@ -17,7 +18,7 @@ void bus_free(bus_t *bus);
 
 uint8_t *bus_mem_addr(bus_t *bus, uint16_t address);
 void bus_mem_read(bus_t *bus, uint16_t address, uint8_t *dst, size_t size);
-void bus_mem_write(bus_t *bus, uint16_t address, uint8_t *src, size_t size);
+void bus_mem_write(bus_t *bus, uint16_t address, const uint8_t *src, size_t size);
 
 uint8_t bus_mem_read_u8(bus_t *bus, uint16_t address);
 void bus_mem_write_u8(bus_t *bus, uint16_t address, uint8_t value);
