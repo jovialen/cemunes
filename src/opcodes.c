@@ -469,6 +469,13 @@ static void plp(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define PLP_INSTRUCTION() CPU_INSTRUCTION(plp, CPU_ADDRESSING_MODE_IMPLIED)
 
+static void rti(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  plp(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  rts(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+}
+
+#define RTI_INSTRUCTION() CPU_INSTRUCTION(rti, CPU_ADDRESSING_MODE_IMPLIED)
+
 const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x00] = BRK_INSTRUCTION(),
   [0xea] = NOP_INSTRUCTION(),
@@ -640,4 +647,6 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x08] = PHP_INSTRUCTION(),
   [0x68] = PLA_INSTRUCTION(),
   [0x28] = PLP_INSTRUCTION(),
+
+  [0x40] = RTI_INSTRUCTION(),
 };
