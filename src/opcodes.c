@@ -240,6 +240,21 @@ static void jmp(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define JMP_INSTRUCTION(MODE) CPU_INSTRUCTION(bvs, MODE)
 
+static void jsr(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint16_t addr = cpu_read_address(cpu, mode);
+  cpu_stack_push_u16(cpu, cpu->registers.pc);
+  cpu->registers.pc = addr;
+}
+
+#define JSR_INSTRUCTION() CPU_INSTRUCTION(jsr, CPU_ADDRESSING_MODE_ABSOLUTE)
+
+static void rts(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint16_t addr = cpu_stack_pop_u16(cpu);
+  cpu->registers.pc = addr;
+}
+
+#define RTS_INSTRUCTION() CPU_INSTRUCTION(rts, CPU_ADDRESSING_MODE_IMPLIED)
+
 static void cld(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_DECIMAL;
 }
@@ -549,6 +564,8 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
 
   [0x4c] = JMP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0x6c] = JMP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT),
+  [0x20] = JSR_INSTRUCTION(),
+  [0x60] = RTS_INSTRUCTION(),
   
   [0x90] = BCC_INSTRUCTION(),
   [0xb0] = BCS_INSTRUCTION(),
