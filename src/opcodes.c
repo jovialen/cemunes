@@ -27,6 +27,18 @@ static void sec(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define SEC_INSTRUCTION() CPU_INSTRUCTION(sec, CPU_ADDRESSING_MODE_IMPLIED)
 
+static void sed(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags |= CPU_STATUS_FLAG_DECIMAL;
+}
+
+#define SED_INSTRUCTION() CPU_INSTRUCTION(sed, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void sei(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags |= CPU_STATUS_FLAG_INT_DISABLE;
+}
+
+#define SEI_INSTRUCTION() CPU_INSTRUCTION(sei, CPU_ADDRESSING_MODE_IMPLIED)
+
 static void clc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_CARRY;
 }
@@ -514,6 +526,8 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xb8] = CLV_INSTRUCTION(),
   
   [0x38] = SEC_INSTRUCTION(),
+  [0xf8] = SED_INSTRUCTION(),
+  [0x78] = SEI_INSTRUCTION(),
   
   [0xca] = DEX_INSTRUCTION(),
   [0x88] = DEY_INSTRUCTION(),
