@@ -444,6 +444,31 @@ static void ora(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define ORA_INSTRUCTION(MODE) CPU_INSTRUCTION(ora, MODE)
 
+static void pha(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu_stack_push_u8(cpu, cpu->registers.a);
+}
+
+#define PHA_INSTRUCTION() CPU_INSTRUCTION(pha, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void php(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu_stack_push_u8(cpu, cpu->registers.flags);
+}
+
+#define PHP_INSTRUCTION() CPU_INSTRUCTION(php, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void pla(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.a = cpu_stack_pop_u8(cpu);
+  update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define PLA_INSTRUCTION() CPU_INSTRUCTION(pla, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void plp(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags = cpu_stack_pop_u8(cpu);
+}
+
+#define PLP_INSTRUCTION() CPU_INSTRUCTION(plp, CPU_ADDRESSING_MODE_IMPLIED)
+
 const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x00] = BRK_INSTRUCTION(),
   [0xea] = NOP_INSTRUCTION(),
@@ -610,4 +635,9 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x98] = TYA_INSTRUCTION(),
   [0xba] = TSX_INSTRUCTION(),
   [0x9a] = TXS_INSTRUCTION(),
+
+  [0x48] = PHA_INSTRUCTION(),
+  [0x08] = PHP_INSTRUCTION(),
+  [0x68] = PLA_INSTRUCTION(),
+  [0x28] = PLP_INSTRUCTION(),
 };
