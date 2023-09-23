@@ -78,6 +78,26 @@ void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
   *cpu_mem_addr(cpu, mode) = value;
 }
 
+void cpu_stack_push(cpu_t *cpu, uint8_t value) {
+  if (cpu->registers.s == 0xFF) {
+    printf("error: stack overflow");
+    return;
+  }
+  
+  bus_mem_write_u8(cpu->bus, STACK_START_ADDR + cpu->registers.s, value);
+  cpu->registers.s++;
+}
+
+uint8_t cpu_stack_pop(cpu_t *cpu) {
+  if (cpu->registers.s == 0) {
+    printf("error: stack underflow");
+    return 0;
+  }
+  
+  cpu->registers.s--;
+  return bus_mem_read_u8(cpu->bus, STACK_START_ADDR + cpu->registers.s);
+}
+
 void cpu_load_program(cpu_t *cpu, uint8_t *program, size_t size) {
   bus_mem_write(cpu->bus, 0x8000, program, size);
   bus_mem_write_u16(cpu->bus, RESET_VECTOR, 0x8000);
