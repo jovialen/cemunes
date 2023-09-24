@@ -8,11 +8,9 @@ static uint8_t *map_memory(bus_t *bus, uint16_t address) {
 	if (address >= RAM_START && address < RAM_END) {
 		return bus->ram;
 	} else if (address >= PPU_REG_START && address < PPU_REG_END) {
-		printf("error: cannot map ppu registers\n");
-		return NULL;
+		return bus->ppu_reg;
 	} else if (address >= APU_REG_START && address < APU_REG_END) {
-		printf("error: cannot map apu registers\n");
-		return NULL;
+		return bus->apu_reg;
 	} else if (address >= WROM_START && address < WROM_END) {
 		return bus->wrom;
 	} else if (address >= CARTRIDGE_START /* && address < CARTRIDGE_END */) {

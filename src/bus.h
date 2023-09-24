@@ -27,6 +27,8 @@
 
 typedef struct bus_t {
   uint8_t ram[RAM_SIZE];
+  uint8_t ppu_reg[PPU_REG_SIZE];
+  uint8_t apu_reg[APU_REG_SIZE];
   uint8_t wrom[WROM_SIZE];
   const cartridge_t *cartridge;
 } bus_t;
