@@ -238,10 +238,10 @@ static void bvs(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define BVS_INSTRUCTION() CPU_INSTRUCTION(bvs, CPU_ADDRESSING_MODE_RELATIVE)
 
 static void jmp(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu->registers.pc = cpu_mem_read(cpu, mode);
+  cpu->registers.pc = cpu_read_address(cpu, mode);
 }
 
-#define JMP_INSTRUCTION(MODE) CPU_INSTRUCTION(bvs, MODE)
+#define JMP_INSTRUCTION(MODE) CPU_INSTRUCTION(jmp, MODE)
 
 static void jsr(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint16_t addr = cpu_read_address(cpu, mode);
@@ -429,7 +429,7 @@ static void iny(cpu_t *cpu, cpu_addressing_mode_t mode) {
   update_negative_zero_registers(cpu, cpu->registers.y);
 }
 
-#define INY_INSTRUCTION() CPU_INSTRUCTION(inx, CPU_ADDRESSING_MODE_IMPLIED)
+#define INY_INSTRUCTION() CPU_INSTRUCTION(iny, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void eor(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read(cpu, mode);

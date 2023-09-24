@@ -5,7 +5,7 @@
 #include <string.h>
 
 static uint8_t *map_memory(bus_t *bus, uint16_t address) {
-	if (address >= RAM_START && address < RAM_END) {
+	if (/* address >= RAM_START && */ address < RAM_END) {
 		return bus->ram;
 	} else if (address >= PPU_REG_START && address < PPU_REG_END) {
 		return bus->ppu_reg;
@@ -23,7 +23,7 @@ static uint8_t *map_memory(bus_t *bus, uint16_t address) {
 }
 
 static uint16_t map_memory_size(uint16_t address) {
-	if (address >= RAM_START && address < RAM_END) {
+	if (/* address >= RAM_START && */ address < RAM_END) {
 		return RAM_SIZE;
 	} else if (address >= PPU_REG_START && address < PPU_REG_END) {
 		return PPU_REG_SIZE;
@@ -40,7 +40,7 @@ static uint16_t map_memory_size(uint16_t address) {
 }
 
 static uint16_t map_address(uint16_t address) {
-	if (address >= RAM_START && address < RAM_END) {
+	if (/* address >= RAM_START && */ address < RAM_END) {
 		return (address - RAM_START) % RAM_SIZE;
 	} else if (address >= PPU_REG_START && address < PPU_REG_END) {
 		return (address - PPU_REG_START) % PPU_REG_SIZE;
