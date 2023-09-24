@@ -164,12 +164,25 @@ uint8_t cpu_step(cpu_t *cpu) {
     instruction->func(cpu, instruction->addr_mode);
   }
 
-  return op;
+  return op && instruction->valid;
 }
 
 void cpu_trace(cpu_t *cpu) {
   uint8_t opcode = bus_mem_read_u8(cpu->bus, cpu->registers.pc);
   const cpu_instruction_t *instruction = &INSTRUCTIONS[opcode];
+
+  if (!instruction->valid) {
+    printf("%04X  %02X             (err) instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
+      cpu->registers.pc,
+      opcode,
+      cpu->registers.a,
+      cpu->registers.x,
+      cpu->registers.y,
+      cpu->registers.flags,
+      cpu->registers.s
+    );
+    return;
+  }
 
   uint8_t b1 = bus_mem_read_u8(cpu->bus, cpu->registers.pc + 1);
   uint8_t b2 = bus_mem_read_u8(cpu->bus, cpu->registers.pc + 2);
@@ -188,7 +201,7 @@ void cpu_trace(cpu_t *cpu) {
       printf("       ");
       break;
     default:
-      printf("error: unexpected opcode byte length");
+      printf("error: unexpected opcode byte length  ");
       break;
   }
 

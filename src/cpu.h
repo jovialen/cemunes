@@ -1,6 +1,7 @@
 #ifndef __cnes_cpu_h__
 #define __cnes_cpu_h__
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -54,6 +55,7 @@ typedef struct cpu_t {
 typedef void(*cpu_instruction_func_t)(cpu_t *, cpu_addressing_mode_t);
 
 typedef struct cpu_instruction_t {
+	bool valid;
 	const char *name;
 	cpu_instruction_func_t func;
 	cpu_addressing_mode_t addr_mode;

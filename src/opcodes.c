@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define CPU_INSTRUCTION(FUNC, MODE) { .name = #FUNC, .func = &FUNC, .addr_mode = MODE }
-#define BRK_INSTRUCTION() { .name = "brk", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
-#define NOP_INSTRUCTION() { .name = "nop", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
+#define CPU_INSTRUCTION(FUNC, MODE) { .valid = true, .name = #FUNC, .func = &FUNC, .addr_mode = MODE }
+#define BRK_INSTRUCTION() { .valid = true, .name = "brk", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
+#define NOP_INSTRUCTION() { .valid = true, .name = "nop", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
 
 static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
   if (a == 0) {
