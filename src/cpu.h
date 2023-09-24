@@ -56,6 +56,7 @@ typedef void(*cpu_instruction_func_t)(cpu_t *, cpu_addressing_mode_t);
 
 typedef struct cpu_instruction_t {
 	bool valid;
+	bool unofficial;
 	const char *name;
 	cpu_instruction_func_t func;
 	cpu_addressing_mode_t addr_mode;

@@ -192,20 +192,20 @@ void cpu_trace(cpu_t *cpu) {
 
   switch(get_addr_mode_byte_length(instruction->addr_mode)) {
     case 2:
-      printf("%02X %02X  ", b1, b2);
+      printf("%02X %02X ", b1, b2);
       break;
     case 1:
-      printf("%02X     ", b1);
+      printf("%02X    ", b1);
       break;
     case 0:
-      printf("       ");
+      printf("      ");
       break;
     default:
-      printf("error: unexpected opcode byte length  ");
+      printf("error: unexpected opcode byte length ");
       break;
   }
 
-  printf("%s ", instruction->name);
+  printf("%c%s ", instruction->unofficial ? '*' : ' ', instruction->name);
 
   switch (instruction->addr_mode) {
   case CPU_ADDRESSING_MODE_IMPLIED:

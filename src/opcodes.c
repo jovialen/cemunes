@@ -3,9 +3,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define CPU_INSTRUCTION(FUNC, MODE) { .valid = true, .name = #FUNC, .func = &FUNC, .addr_mode = MODE }
-#define BRK_INSTRUCTION() { .valid = true, .name = "brk", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
-#define NOP_INSTRUCTION() { .valid = true, .name = "nop", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
+#define CPU_INSTRUCTION(FUNC, MODE)            { .valid = true, .unofficial = false, .name = #FUNC, .func = &FUNC, .addr_mode = MODE }
+#define UNOFFICIAL_CPU_INSTRUCTION(FUNC, MODE) { .valid = true, .unofficial = true,  .name = #FUNC, .func = &FUNC, .addr_mode = MODE }
+
+#define BRK_INSTRUCTION() { .valid = true, .unofficial = false, .name = "brk", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
+#define NOP_INSTRUCTION() { .valid = true, .unofficial = false, .name = "nop", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
+#define UNOFFICIAL_NOP_INSTRUCTION() { .valid = true, .unofficial = true, .name = "nop", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
 
 static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
   if (a == 0) {
@@ -478,7 +481,35 @@ static void rti(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x00] = BRK_INSTRUCTION(),
+  
   [0xea] = NOP_INSTRUCTION(),
+  [0x80] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x82] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0xc2] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0xe2] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x04] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x44] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x64] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x89] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x0c] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x14] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x34] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x54] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x74] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0xd4] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0xf4] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x1a] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x3a] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x5a] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x7a] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0xda] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0xfa] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x1c] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x3c] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x5c] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0x7c] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0xdc] = UNOFFICIAL_NOP_INSTRUCTION(),
+  [0xfc] = UNOFFICIAL_NOP_INSTRUCTION(),
 
   [0x69] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
   [0x65] = ADC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
