@@ -92,11 +92,19 @@ uint8_t *cpu_mem_addr(cpu_t *cpu, cpu_addressing_mode_t mode) {
 }
 
 uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  return *cpu_mem_addr(cpu, mode);
+  if (mode == CPU_ADDRESSING_MODE_ACCUMULATOR) {
+    return cpu->registers.a;
+  }
+  
+  uint16_t address = get_address(cpu, mode);
+  cpu->registers.pc += get_addr_mode_byte_length(mode);
+  return bus_mem_read_u8(cpu->bus, address);
 }
 
 void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
-  *cpu_mem_addr(cpu, mode) = value;
+  uint16_t address = get_address(cpu, mode);
+  cpu->registers.pc += get_addr_mode_byte_length(mode);
+  bus_mem_write_u8(cpu->bus, address, value);
 }
 
 void cpu_stack_push_u8(cpu_t *cpu, uint8_t value) {
@@ -132,8 +140,9 @@ uint16_t cpu_stack_pop_u16(cpu_t *cpu) {
   return (high << 8) | low;
 }
 
-void cpu_load_program(cpu_t *cpu, const cartridge_t *cart) {
-  bus_mem_write(cpu->bus, PROGRAM_START_ADDR, cart->rom, cart->rom_size);
+void cpu_load_cartridge(cpu_t *cpu, const cartridge_t *cart) {
+  bus_load_cartridge(cpu->bus, cart);
+  cpu_reset(cpu);
 }
 
 void cpu_reset(cpu_t *cpu) {

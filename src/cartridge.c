@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bus.h"
+
 #define INES_HEADER_SIZE 16
 #define INES_ROM_BANK_SIZE 16384 
 #define INES_VROM_BANK_SIZE 8192 
@@ -21,7 +23,7 @@ typedef struct ines_header_t {
   size_t vrom_size;
 } ines_header_t;
 
-static ines_header_t ines_header(uint8_t *buffer, size_t size) {
+static ines_header_t ines_header(const uint8_t *buffer, size_t size) {
   ines_header_t header = { 0 };
   
   if (memcmp(INES_HEADER_START, buffer, 4) != 0) {
@@ -48,7 +50,7 @@ static ines_header_t ines_header(uint8_t *buffer, size_t size) {
   return header;
 }
 
-cartridge_t *ines_to_cartridge(uint8_t *buffer, size_t size) {
+cartridge_t *ines_to_cartridge(const uint8_t *buffer, size_t size) {
   ines_header_t header = ines_header(buffer, size);
   if (!header.valid) {
     printf("error: invalid ines header");
@@ -86,4 +88,19 @@ void cartridge_free(cartridge_t *cart) {
   free(cart->rom);
   free(cart->vrom);
   free(cart);
+}
+
+void cartridge_read(const cartridge_t *cart, uint16_t address, uint8_t *dst, uint16_t size) {
+  if (size > CARTRIDGE_SIZE) {
+    printf("warn: attempt to read outside of memory; clamping to bounds\n");
+    size = CARTRIDGE_SIZE;
+  }
+  
+  address %= cart->rom_size;
+  memcpy(dst, cart->rom + address, size);
+}
+
+uint8_t cartridge_read_u8(const cartridge_t *cart, uint16_t address) {
+  address %= cart->rom_size;
+  return cart->rom[address];
 }

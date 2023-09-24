@@ -30,10 +30,8 @@ int main(int argc, char **argv) {
 	size_t size;
 	uint8_t *bytes = read_bytes("./snake.nes", &size);
 	cartridge_t *cart = ines_to_cartridge(bytes, size);
-	printf("%zu %zu %zu\n", size, cart->rom_size, cart->vrom_size);
 	
-	cpu_load_program(&cpu, cart);
-	
+	cpu_load_cartridge(&cpu, cart);
 	cpu_run(&cpu);
 
 	bus_free(bus);
