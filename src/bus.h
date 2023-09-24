@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define BUS_MEM_SIZE 0x10000
-#define PROGRAM_START_ADDR 0x0600
+#define PROGRAM_START_ADDR 0x8000
 #define RESET_VECTOR 0xFFFC
 
 

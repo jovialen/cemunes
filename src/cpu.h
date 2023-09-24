@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "bus.h"
+#include "cartridge.h"
 
 #define INSTRUCTION_COUNT 256
 #define STACK_START_ADDR 0x100
@@ -70,7 +71,7 @@ uint8_t cpu_stack_pop_u8(cpu_t *cpu);
 void cpu_stack_push_u16(cpu_t *cpu, uint16_t value);
 uint16_t cpu_stack_pop_u16(cpu_t *cpu);
 
-void cpu_load_program(cpu_t *cpu, const uint8_t *program, size_t size);
+void cpu_load_program(cpu_t *cpu, const cartridge_t *cart);
 
 void cpu_reset(cpu_t *cpu);
 void cpu_run(cpu_t *cpu);
