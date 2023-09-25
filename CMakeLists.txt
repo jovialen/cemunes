@@ -9,7 +9,13 @@ set(CMAKE_C_FLAGS "-Wall -Wextra")
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 
+option(CNES_TRACE_ADDR_MODE "Include the address mode of the instruction in the trace" ON)
+
 add_executable(cnes "src/main.c" "src/bus.c" "src/cpu.c" "src/opcodes.c" "src/cartridge.c")
+
+if (${CNES_TRACE_ADDR_MODE})
+  target_compile_definitions(cnes PRIVATE "CNES_TRACE_ADDR_MODE")
+endif()
 
 set_target_properties(cnes PROPERTIES
   C_STANDARD 99

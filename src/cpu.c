@@ -172,7 +172,12 @@ void cpu_trace(cpu_t *cpu) {
   const cpu_instruction_t *instruction = &INSTRUCTIONS[opcode];
 
   if (!instruction->valid) {
-    printf("%04X  %02X             (err) instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
+    printf(
+    #ifdef CNES_TRACE_ADDR_MODE
+      "%04X  %02X             (err) instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
+    #else
+      "%04X  %02X             instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
+    #endif
       cpu->registers.pc,
       opcode,
       cpu->registers.a,
@@ -207,67 +212,86 @@ void cpu_trace(cpu_t *cpu) {
 
   printf("%c%s ", instruction->unofficial ? '*' : ' ', instruction->name);
 
+  #ifdef CNES_TRACE_ADDR_MODE
+  switch (instruction->addr_mode) {
+  case CPU_ADDRESSING_MODE_IMPLIED:     printf("(imp) "); break;
+  case CPU_ADDRESSING_MODE_ACCUMULATOR: printf("(acc) "); break;
+  case CPU_ADDRESSING_MODE_IMMEDIATE:   printf("(imm) "); break;
+  case CPU_ADDRESSING_MODE_RELATIVE:    printf("(rel) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE:   printf("(zp ) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE_X: printf("(zpx) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE_Y: printf("(zpy) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE:    printf("(abs) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE_X:  printf("(abx) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE_Y:  printf("(aby) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT:    printf("(ind) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT_X:  printf("(izx) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT_Y:  printf("(izy) "); break;
+  default:                              printf("(err) "); break;
+  }
+  #endif
+
   switch (instruction->addr_mode) {
   case CPU_ADDRESSING_MODE_IMPLIED:
-    printf("(imp)                             ");
+    printf("                            ");
     break;
   case CPU_ADDRESSING_MODE_ACCUMULATOR:
-    printf("(acc) A                           ");
+    printf("A                           ");
     break;
   case CPU_ADDRESSING_MODE_IMMEDIATE:
-    printf("(imm) #$%02X                        ", b1);
+    printf("#$%02X                        ", b1);
     break;
   case CPU_ADDRESSING_MODE_RELATIVE:
-    printf("(rel) $%04X                       ", cpu->registers.pc + b1);
+    printf("$%04X                       ", cpu->registers.pc + b1);
     break;
   case CPU_ADDRESSING_MODE_ZERO_PAGE: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1);
-    printf("(zp ) $%02X = %02X                    ", b1, addr);
+    printf("$%02X = %02X                    ", b1, addr);
     break;
   }
   case CPU_ADDRESSING_MODE_ZERO_PAGE_X: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1 + cpu->registers.x);
-    printf("(zpx) $%02X,X @ %02X = %02X             ", b1, b1 + cpu->registers.x, addr);
+    printf("$%02X,X @ %02X = %02X             ", b1, b1 + cpu->registers.x, addr);
     break;
   }
   case CPU_ADDRESSING_MODE_ZERO_PAGE_Y: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1 + cpu->registers.y);
-    printf("(zpy) $%02X,Y @ %02X = %02X             ", b1, b1 + cpu->registers.y, addr);
+    printf("$%02X,Y @ %02X = %02X             ", b1, b1 + cpu->registers.y, addr);
     break;
   }
   case CPU_ADDRESSING_MODE_ABSOLUTE: {
-    printf("(abs) $%04X                       ", bb);
+    printf("$%04X                       ", bb);
     break;
   }
   case CPU_ADDRESSING_MODE_ABSOLUTE_X: {
     uint16_t addr = bb + cpu->registers.x;
-    printf("(abx) $%04X,X @ %04X = %02X         ", bb, addr, bus_mem_read_u8(cpu->bus, addr));
+    printf("$%04X,X @ %04X = %02X         ", bb, addr, bus_mem_read_u8(cpu->bus, addr));
     break;
   }
   case CPU_ADDRESSING_MODE_ABSOLUTE_Y: {
     uint16_t addr = bb + cpu->registers.y;
-    printf("(aby) $%04X,Y @ %04X = %02X         ", bb, addr, bus_mem_read_u8(cpu->bus, addr));
+    printf("$%04X,Y @ %04X = %02X         ", bb, addr, bus_mem_read_u8(cpu->bus, addr));
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT: {
     uint16_t addr = bus_mem_read_u16(cpu->bus, bb);
-    printf("(ind) ($%04X) = %04X              ", bb, addr);
+    printf("($%04X) = %04X              ", bb, addr);
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
     uint16_t addr = bus_mem_read_u8(cpu->bus, b1) + cpu->registers.x;
     uint16_t ind = bus_mem_read_u16(cpu->bus, addr);
-    printf("(izx) ($%02X,X) @ %02X = %04X = %02X    ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
+    printf("($%02X,X) @ %02X = %04X = %02X    ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT_Y: {
     uint16_t addr = bus_mem_read_u8(cpu->bus, b1);
     uint16_t ind = bus_mem_read_u16(cpu->bus, addr) + cpu->registers.y;
-    printf("(izy) ($%02X),Y = %04X @ %04X = %02X  ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
+    printf("($%02X),Y = %04X @ %04X = %02X  ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }
   default:
-    printf("(err) cannot format addr mode     ");
+    printf("cannot format addr mode     ");
     break;
   }
 
