@@ -94,7 +94,6 @@ int main(int argc, char **argv) {
 
 	if (args.start_pc) {
 		log_debug("starting execution at %04X", args.pc);
-		cpu.registers.pc = args.pc;
 		cpu_run_from(&cpu, args.pc);
 	} else {
 		log_debug("starting execution");
