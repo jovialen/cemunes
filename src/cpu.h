@@ -78,6 +78,7 @@ void cpu_load_cartridge(cpu_t *cpu, const cartridge_t *cart);
 
 void cpu_reset(cpu_t *cpu);
 void cpu_run(cpu_t *cpu);
+void cpu_run_from(cpu_t *cpu, uint16_t start);
 uint8_t cpu_step(cpu_t *cpu);
 
 void cpu_trace(cpu_t *cpu);

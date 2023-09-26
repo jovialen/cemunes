@@ -152,6 +152,13 @@ void cpu_reset(cpu_t *cpu) {
 }
 
 void cpu_run(cpu_t *cpu) {
+  cpu_reset(cpu);
+  while (cpu_step(cpu));
+}
+
+void cpu_run_from(cpu_t *cpu, uint16_t start) {
+  cpu_reset(cpu);
+  cpu->registers.pc = start;
   while (cpu_step(cpu));
 }
 
