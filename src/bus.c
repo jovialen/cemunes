@@ -133,6 +133,10 @@ uint8_t bus_mem_read_u8(bus_t *bus, uint16_t address) {
 }
 
 void bus_mem_write_u8(bus_t *bus, uint16_t address, uint8_t value) {
+	if (address >= CARTRIDGE_START) {
+		log_error("cannot write to cartridge rom");
+		return;
+	}
 	*bus_mem_addr(bus, address) = value;
 }
 

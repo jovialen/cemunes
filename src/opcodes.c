@@ -245,14 +245,14 @@ static void jmp(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 static void jsr(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint16_t addr = cpu_read_address(cpu, mode);
-  cpu_stack_push_u16(cpu, cpu->registers.pc);
+  cpu_stack_push_u16(cpu, cpu->registers.pc - 1);
   cpu->registers.pc = addr;
 }
 
 #define JSR_INSTRUCTION() CPU_INSTRUCTION(jsr, CPU_ADDRESSING_MODE_ABSOLUTE)
 
 static void rts(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint16_t addr = cpu_stack_pop_u16(cpu);
+  uint16_t addr = cpu_stack_pop_u16(cpu) + 1;
   cpu->registers.pc = addr;
 }
 
@@ -294,17 +294,17 @@ static void cmp(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define CMP_INSTRUCTION(MODE) CPU_INSTRUCTION(cmp, MODE)
 
-static void cmx(cpu_t *cpu, cpu_addressing_mode_t mode) {
+static void cpx(cpu_t *cpu, cpu_addressing_mode_t mode) {
   compare(cpu, mode, cpu->registers.x);
 }
 
-#define CMX_INSTRUCTION(MODE) CPU_INSTRUCTION(cmx, MODE)
+#define CPX_INSTRUCTION(MODE) CPU_INSTRUCTION(cpx, MODE)
 
-static void cmy(cpu_t *cpu, cpu_addressing_mode_t mode) {
+static void cpy(cpu_t *cpu, cpu_addressing_mode_t mode) {
   compare(cpu, mode, cpu->registers.y);
 }
 
-#define CMY_INSTRUCTION(MODE) CPU_INSTRUCTION(cmy, MODE)
+#define CPY_INSTRUCTION(MODE) CPU_INSTRUCTION(cpy, MODE)
 
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.a = cpu_mem_read(cpu, mode);
@@ -475,6 +475,7 @@ static void plp(cpu_t *cpu, cpu_addressing_mode_t mode) {
 static void rti(cpu_t *cpu, cpu_addressing_mode_t mode) {
   plp(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   rts(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  cpu->registers.pc--;
 }
 
 #define RTI_INSTRUCTION() CPU_INSTRUCTION(rti, CPU_ADDRESSING_MODE_IMPLIED)
@@ -594,13 +595,13 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xc1] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0xd1] = CMP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
 
-  [0xe0] = CMX_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
-  [0xe4] = CMX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
-  [0xec] = CMX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xe0] = CPX_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0xe4] = CPX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xec] = CPX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   
-  [0xc0] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
-  [0xc4] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
-  [0xcc] = CMY_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xc0] = CPY_INSTRUCTION(CPU_ADDRESSING_MODE_IMMEDIATE),
+  [0xc4] = CPY_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xcc] = CPY_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
 
   [0xc6] = DEC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
   [0xd6] = DEC_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),

@@ -129,8 +129,8 @@ uint8_t cpu_stack_pop_u8(cpu_t *cpu) {
 }
 
 void cpu_stack_push_u16(cpu_t *cpu, uint16_t value) {
-	uint8_t low = value & 0xFF;
-	uint8_t high = (value >> 8) & 0xFF;
+  uint8_t low = value & 0xFF;
+  uint8_t high = (value >> 8) & 0xFF;
   cpu_stack_push_u8(cpu, high);
   cpu_stack_push_u8(cpu, low);
 }
@@ -249,7 +249,7 @@ void cpu_trace(cpu_t *cpu) {
     printf("#$%02X                        ", b1);
     break;
   case CPU_ADDRESSING_MODE_RELATIVE:
-    printf("$%04X                       ", cpu->registers.pc + b1);
+    printf("$%04X                       ", cpu->registers.pc + b1 + 2);
     break;
   case CPU_ADDRESSING_MODE_ZERO_PAGE: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1);
