@@ -151,7 +151,6 @@ void cpu_reset(cpu_t *cpu) {
 }
 
 void cpu_run(cpu_t *cpu) {
-  cpu_reset(cpu);
   while (cpu_step(cpu));
 }
 
