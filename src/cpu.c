@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "bus.h"
+#include "log.h"
 
 static uint8_t fetch_op(cpu_t *cpu) {
   return cpu_mem_read(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
@@ -43,10 +44,10 @@ static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode) {
     return bus_mem_read_u16(cpu->bus, addr) + cpu->registers.y;
   }
   case CPU_ADDRESSING_MODE_IMPLIED:
-    printf("error: cannot find address; address should be implied");
+    log_error("cannot find address; address should be implied");
     return 0;
   default:
-    printf("error: cannot find address; %d not implemented", mode);
+    log_error("cannot find address; %d not implemented", mode);
     return 0;
   }
 }
@@ -70,7 +71,7 @@ static uint16_t get_addr_mode_byte_length(cpu_addressing_mode_t mode) {
   case CPU_ADDRESSING_MODE_ABSOLUTE_Y:
     return 2;
   default:
-    printf("error: missing address mode %d", mode);
+    log_error("missing address mode %d", mode);
     return 0;
   }
 }
@@ -109,7 +110,7 @@ void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
 
 void cpu_stack_push_u8(cpu_t *cpu, uint8_t value) {
   if (cpu->registers.s == 0xFF) {
-    printf("error: stack overflow\n");
+    log_error("stack overflow");
     return;
   }
   
@@ -119,7 +120,7 @@ void cpu_stack_push_u8(cpu_t *cpu, uint8_t value) {
 
 uint8_t cpu_stack_pop_u8(cpu_t *cpu) {
   if (cpu->registers.s == 0) {
-    printf("error: stack underflow\n");
+    log_error("stack underflow");
     return 0;
   }
   

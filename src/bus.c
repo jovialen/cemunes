@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "log.h"
+
 static uint8_t *map_memory(bus_t *bus, uint16_t address) {
 	if (/* address >= RAM_START && */ address < RAM_END) {
 		return bus->ram;
@@ -14,10 +16,10 @@ static uint8_t *map_memory(bus_t *bus, uint16_t address) {
 	} else if (address >= WROM_START && address < WROM_END) {
 		return bus->wrom;
 	} else if (address >= CARTRIDGE_START /* && address < CARTRIDGE_END */) {
-		printf("error: should use cartridge read instead of mapping\n");
+		log_error("should use cartridge read instead of mapping");
 		return NULL;
 	} else {
-		printf("error: cannot map address $%04X\n", address);
+		log_error("cannot map address $%04X", address);
 		return NULL;
 	}
 }
@@ -34,7 +36,7 @@ static uint16_t map_memory_size(uint16_t address) {
 	} else if (address >= CARTRIDGE_START /* && address < CARTRIDGE_END */) {
 		return CARTRIDGE_SIZE;
 	} else {
-		printf("error: cannot map address $%04X\n", address);
+		log_error("cannot map address $%04X", address);
 		return 0;
 	}
 }
@@ -51,13 +53,17 @@ static uint16_t map_address(uint16_t address) {
 	} else if (address >= CARTRIDGE_START /* && address < CARTRIDGE_END */) {
 		return (address - CARTRIDGE_START) % CARTRIDGE_SIZE;
 	} else {
-		printf("error: cannot map address $%04X\n", address);
+		log_error("cannot map address $%04X", address);
 		return address;
 	}
 }
 
 bus_t *bus_new() {
 	bus_t *bus = malloc(sizeof(bus_t));
+	if (bus == NULL) {
+		log_error("failed to allocate bus memory");
+	}
+
 	memset(bus, 0, sizeof(bus_t));
 	return bus;
 }
@@ -72,7 +78,7 @@ void bus_load_cartridge(bus_t *bus, const cartridge_t *cart) {
 
 uint8_t *bus_mem_addr(bus_t *bus, uint16_t address) {
 	if (address >= CARTRIDGE_START) {
-		printf("error: cannot get pointer to rom address\n");
+		log_error("cannot get pointer to rom address");
 		return NULL;
 	} else {
 		uint8_t *memory = map_memory(bus, address);
@@ -102,7 +108,7 @@ void bus_mem_read(bus_t *bus, uint16_t address, uint8_t *dst, size_t size) {
 
 void bus_mem_write(bus_t *bus, uint16_t address, const uint8_t *src, size_t size) {
 	if (address >= CARTRIDGE_START) {
-		printf("error: cannot write to rom\n");
+		log_error("cannot write to rom");
 		return;
 	}
 	

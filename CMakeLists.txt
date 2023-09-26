@@ -11,7 +11,10 @@ set(CMAKE_C_FLAGS_RELEASE "-O3")
 
 option(CNES_TRACE_ADDR_MODE "Include the address mode of the instruction in the trace" ON)
 
-add_executable(cnes "src/main.c" "src/bus.c" "src/cpu.c" "src/opcodes.c" "src/cartridge.c")
+set(CNES_SOURCES "src/main.c" "src/bus.c" "src/cpu.c" "src/opcodes.c" "src/cartridge.c" "src/log.c")
+set(CNES_HEADERS "src/bus.h" "src/cpu.h" "src/cartridge.h" "src/log.h")
+
+add_executable(cnes ${CNES_SOURCES} ${CNES_HEADERS})
 
 if (${CNES_TRACE_ADDR_MODE})
   target_compile_definitions(cnes PRIVATE "CNES_TRACE_ADDR_MODE")

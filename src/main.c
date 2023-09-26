@@ -7,6 +7,7 @@
 #include "bus.h"
 #include "cartridge.h"
 #include "cpu.h"
+#include "log.h"
 
 typedef struct args_t {
 	bool valid;
@@ -16,19 +17,22 @@ typedef struct args_t {
 } args_t;
 
 uint8_t *read_bytes(const char *path, size_t *size) {
+	log_debug("reading rom file %s", path);
+
 	FILE *f = fopen(path, "rb");
 	if (f == NULL) {
-		printf("error: failed to open file %s\n", path);
+		log_error("failed to open file %s", path);
 		return NULL;
 	}
 
 	fseek(f, 0, SEEK_END);
 	*size = ftell(f);
 	fseek(f, 0, SEEK_SET);
+	log_debug("source file size %zu", size);
 
 	uint8_t *buffer = malloc(*size);
 	if (buffer == NULL) {
-		printf("error: failed to allocate buffer\n");
+		log_error("error: failed to allocate buffer");
 		return NULL;
 	}
 	fread(buffer, sizeof(char), *size, f);
@@ -41,17 +45,25 @@ args_t parse_args(int argc, char **argv) {
 
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-C") == 0) {
+			if (args.start_pc) {
+				log_warn("multiple custom start positons");
+			}
+
 			i++;
 			args.start_pc = true;
 			char *end = NULL;
 			args.pc = strtoul(argv[i], &end, 16);
 		}
 		else {
+			if (args.rom_path != NULL) {
+				log_warn("multiple roms defined");
+			}
+
 			args.rom_path = argv[i];
 		}
 	}
 
-	args.valid = true;
+	args.valid = args.rom_path != NULL;
 	return args;
 }
 
@@ -75,11 +87,13 @@ int main(int argc, char **argv) {
 	if (bytes == NULL) {
 		return 2;
 	}
-
 	cartridge_t *cart = ines_to_cartridge(bytes, size);
+	free(bytes);
+
 	cpu_load_cartridge(&cpu, cart);
 
 	if (args.start_pc) {
+		log_debug("starting execution at %04X", args.pc);
 		cpu.registers.pc = args.pc;
 	}
 	cpu_run(&cpu);
