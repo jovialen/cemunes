@@ -31,17 +31,24 @@ static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode) {
     if ((addr & 0xFF) == 0xFF) {
       uint16_t low = (uint16_t) bus_mem_read_u8(cpu->bus, addr);
       uint16_t high = (uint16_t) bus_mem_read_u8(cpu->bus, addr & 0xFF00);
-      return high << 8 | low;
+      return uint16_from_bytes(high, low);
     }
     return bus_mem_read_u16(cpu->bus, addr);
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, cpu->registers.pc) + cpu->registers.x;
-    return bus_mem_read_u16(cpu->bus, addr);
+    uint8_t low = bus_mem_read_u8(cpu->bus, addr);
+    uint8_t high = bus_mem_read_u8(cpu->bus, (addr + 1) % 0x100);
+    uint16_t ind = uint16_from_bytes(high, low);
+    log_trace("%02X %04X %04X", addr, (uint16_t) addr, ind);
+    return bus_mem_read_u16(cpu->bus, ind);
   }
   case CPU_ADDRESSING_MODE_INDIRECT_Y: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, cpu->registers.pc);
-    return bus_mem_read_u16(cpu->bus, addr) + cpu->registers.y;
+    uint8_t low = bus_mem_read_u8(cpu->bus, addr);
+    uint8_t high = bus_mem_read_u8(cpu->bus, (addr + 1) % 0x100);
+    uint16_t ind = uint16_from_bytes(high, low);
+    return ind + cpu->registers.y;
   }
   case CPU_ADDRESSING_MODE_IMPLIED:
     log_error("cannot find address; address should be implied");
@@ -105,6 +112,7 @@ uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode) {
 void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
   uint16_t address = get_address(cpu, mode);
   cpu->registers.pc += get_addr_mode_byte_length(mode);
+  log_trace("writing %02X to $%04X", value, address);
   bus_mem_write_u8(cpu->bus, address, value);
 }
 
@@ -286,8 +294,8 @@ void cpu_trace(cpu_t *cpu) {
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
-    uint16_t addr = bus_mem_read_u8(cpu->bus, b1) + cpu->registers.x;
-    uint16_t ind = bus_mem_read_u16(cpu->bus, addr);
+    uint8_t addr = bus_mem_read_u8(cpu->bus, b1) + cpu->registers.x;
+    uint16_t ind = bus_mem_read_u16(cpu->bus, (uint16_t) addr);
     printf("($%02X,X) @ %02X = %04X = %02X    ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }

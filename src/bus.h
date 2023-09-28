@@ -24,6 +24,10 @@
 
 #define RESET_VECTOR 0xFFFC
 
+#define uint16_from_bytes(high, low) (((uint16_t) high << 8) | (uint16_t) low)
+#define high_byte(u16) ((uint8_t) (u16 >> 8))
+#define low_byte(u16) ((uint8_t) (u16 & 0xFF))
+
 
 typedef struct bus_t {
   uint8_t ram[RAM_SIZE];

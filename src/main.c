@@ -68,6 +68,8 @@ args_t parse_args(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+	log_info("initializing...");
+
 	args_t args = parse_args(argc, argv);
 	if (!args.valid) {
 		printf("Usage: cnes [rom path] {options}\n");
@@ -93,13 +95,14 @@ int main(int argc, char **argv) {
 	cpu_load_cartridge(&cpu, cart);
 
 	if (args.start_pc) {
-		log_debug("starting execution at %04X", args.pc);
+		log_info("starting execution at %04X", args.pc);
 		cpu_run_from(&cpu, args.pc);
 	} else {
-		log_debug("starting execution");
+		log_info("starting execution");
 		cpu_run(&cpu);
 	}
 
+	log_info("shutting down");
 	bus_free(bus);
 	cartridge_free(cart);
 	return 0;

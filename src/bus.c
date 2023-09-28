@@ -141,14 +141,10 @@ void bus_mem_write_u8(bus_t *bus, uint16_t address, uint8_t value) {
 }
 
 uint16_t bus_mem_read_u16(bus_t *bus, uint16_t address) {
-	uint16_t low = bus_mem_read_u8(bus, address);
-	uint16_t high = bus_mem_read_u8(bus, address + 1);
-	return (high << 8) | low;
+	return uint16_from_bytes(bus_mem_read_u8(bus, address + 1), bus_mem_read_u8(bus, address));
 }
 
 void bus_mem_write_u16(bus_t *bus, uint16_t address, uint16_t value) {
-	uint8_t low = value & 0xFF;
-	uint8_t high = (value >> 8) & 0xFF;
-	bus_mem_write_u8(bus, address, low);
-	bus_mem_write_u8(bus, address + 1, high);
+	bus_mem_write_u8(bus, address, low_byte(value));
+	bus_mem_write_u8(bus, address + 1, high_byte(value));
 }
