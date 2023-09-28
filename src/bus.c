@@ -148,3 +148,9 @@ void bus_mem_write_u16(bus_t *bus, uint16_t address, uint16_t value) {
 	bus_mem_write_u8(bus, address, low_byte(value));
 	bus_mem_write_u8(bus, address + 1, high_byte(value));
 }
+
+uint16_t bus_mem_read_u16_zero_page(bus_t *bus, uint8_t addr) {
+	uint8_t low = bus_mem_read_u8(bus, addr);
+	uint8_t high = bus_mem_read_u8(bus, (addr + 1) % 0x100);
+	return uint16_from_bytes(high, low);
+}

@@ -51,5 +51,7 @@ void bus_mem_write_u8(bus_t *bus, uint16_t address, uint8_t value);
 uint16_t bus_mem_read_u16(bus_t *bus, uint16_t address);
 void bus_mem_write_u16(bus_t *bus, uint16_t address, uint16_t value);
 
+uint16_t bus_mem_read_u16_zero_page(bus_t *bus, uint8_t addr);
+
 
 #endif /* __cpu_bus_h__ */

@@ -37,17 +37,13 @@ static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode) {
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, cpu->registers.pc) + cpu->registers.x;
-    uint8_t low = bus_mem_read_u8(cpu->bus, addr);
-    uint8_t high = bus_mem_read_u8(cpu->bus, (addr + 1) % 0x100);
-    uint16_t ind = uint16_from_bytes(high, low);
+    uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr);
     log_trace("%02X %04X %04X", addr, (uint16_t) addr, ind);
     return bus_mem_read_u16(cpu->bus, ind);
   }
   case CPU_ADDRESSING_MODE_INDIRECT_Y: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, cpu->registers.pc);
-    uint8_t low = bus_mem_read_u8(cpu->bus, addr);
-    uint8_t high = bus_mem_read_u8(cpu->bus, (addr + 1) % 0x100);
-    uint16_t ind = uint16_from_bytes(high, low);
+    uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr);
     return ind + cpu->registers.y;
   }
   case CPU_ADDRESSING_MODE_IMPLIED:
@@ -301,13 +297,13 @@ void cpu_trace(cpu_t *cpu) {
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1) + cpu->registers.x;
-    uint16_t ind = bus_mem_read_u16(cpu->bus, (uint16_t) addr);
+    uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr);
     printf("($%02X,X) @ %02X = %04X = %02X    ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT_Y: {
     uint16_t addr = bus_mem_read_u8(cpu->bus, b1);
-    uint16_t ind = bus_mem_read_u16(cpu->bus, addr) + cpu->registers.y;
+    uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr) + cpu->registers.y;
     printf("($%02X),Y = %04X @ %04X = %02X  ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }
