@@ -65,9 +65,10 @@ typedef struct cpu_instruction_t {
 extern const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT];
 
 uint16_t cpu_read_address(cpu_t *cpu, cpu_addressing_mode_t mode);
+
 uint8_t *cpu_mem_addr(cpu_t *cpu, cpu_addressing_mode_t mode);
-uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode);
-void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value);
+uint8_t cpu_mem_read_u8(cpu_t *cpu, cpu_addressing_mode_t mode);
+void cpu_mem_write_u8(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value);
 
 void cpu_stack_push_u8(cpu_t *cpu, uint8_t value);
 uint8_t cpu_stack_pop_u8(cpu_t *cpu);

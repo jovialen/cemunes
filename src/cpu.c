@@ -7,7 +7,7 @@
 #include "log.h"
 
 static uint8_t fetch_op(cpu_t *cpu) {
-  return cpu_mem_read(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
+  return cpu_mem_read_u8(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
 }
 
 static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode) {
@@ -17,9 +17,9 @@ static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode) {
   case CPU_ADDRESSING_MODE_ZERO_PAGE:
     return (uint16_t) bus_mem_read_u8(cpu->bus, cpu->registers.pc);
   case CPU_ADDRESSING_MODE_ZERO_PAGE_X:
-    return (uint16_t) bus_mem_read_u8(cpu->bus, cpu->registers.pc) + cpu->registers.x;
+    return (uint16_t) (bus_mem_read_u8(cpu->bus, cpu->registers.pc) + cpu->registers.x) % 0x100;
   case CPU_ADDRESSING_MODE_ZERO_PAGE_Y:
-    return (uint16_t) bus_mem_read_u8(cpu->bus, cpu->registers.pc) + cpu->registers.y;
+    return (uint16_t) (bus_mem_read_u8(cpu->bus, cpu->registers.pc) + cpu->registers.y) % 0x100;
   case CPU_ADDRESSING_MODE_ABSOLUTE:
     return bus_mem_read_u16(cpu->bus, cpu->registers.pc);
   case CPU_ADDRESSING_MODE_ABSOLUTE_X:
@@ -93,13 +93,13 @@ uint8_t *cpu_mem_addr(cpu_t *cpu, cpu_addressing_mode_t mode) {
   if (mode == CPU_ADDRESSING_MODE_ACCUMULATOR) {
     return &cpu->registers.a;
   }
-  
-  uint16_t address = get_address(cpu, mode);
+
+  uint16_t addr = get_address(cpu, mode);
   cpu->registers.pc += get_addr_mode_byte_length(mode);
-  return bus_mem_addr(cpu->bus, address);
+  return bus_mem_addr(cpu->bus, addr);
 }
 
-uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode) {
+uint8_t cpu_mem_read_u8(cpu_t *cpu, cpu_addressing_mode_t mode) {
   if (mode == CPU_ADDRESSING_MODE_ACCUMULATOR) {
     return cpu->registers.a;
   }
@@ -109,10 +109,16 @@ uint8_t cpu_mem_read(cpu_t *cpu, cpu_addressing_mode_t mode) {
   return bus_mem_read_u8(cpu->bus, address);
 }
 
-void cpu_mem_write(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
+void cpu_mem_write_u8(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
+  if (mode == CPU_ADDRESSING_MODE_ACCUMULATOR) {
+    cpu->registers.a = value;
+    return;
+  }
+
   uint16_t address = get_address(cpu, mode);
-  cpu->registers.pc += get_addr_mode_byte_length(mode);
   log_trace("writing %02X to $%04X", value, address);
+
+  cpu->registers.pc += get_addr_mode_byte_length(mode);
   bus_mem_write_u8(cpu->bus, address, value);
 }
 

@@ -49,7 +49,7 @@ static void clc(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define CLC_INSTRUCTION() CPU_INSTRUCTION(clc, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint8_t b = cpu_mem_read(cpu, mode) + (cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
+  uint8_t b = cpu_mem_read_u8(cpu, mode) + (cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
   uint8_t new_a = cpu->registers.a + b;
   
   if (cpu->registers.a > new_a) {
@@ -71,7 +71,7 @@ static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define ADC_INSTRUCTION(MODE) CPU_INSTRUCTION(adc, MODE)
 
 static void sbc(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint8_t b = cpu_mem_read(cpu, mode) + ~(cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
+  uint8_t b = cpu_mem_read_u8(cpu, mode) + ~(cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
 
   if (cpu->registers.a < b) {
     sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
@@ -94,7 +94,7 @@ static void sbc(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define SBC_INSTRUCTION(MODE) CPU_INSTRUCTION(sbc, MODE)
 
 static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint8_t m = cpu_mem_read(cpu, mode);
+  uint8_t m = cpu_mem_read_u8(cpu, mode);
   cpu->registers.a &= m;
   update_negative_zero_registers(cpu, cpu->registers.a);
 }
@@ -168,7 +168,7 @@ static void ror(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define ROR_INSTRUCTION(MODE) CPU_INSTRUCTION(ror, MODE)
 
 static void branch(cpu_t *cpu, bool condition) {
-  uint8_t jump = cpu_mem_read(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
+  uint8_t jump = cpu_mem_read_u8(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
   if (condition) {
     cpu->registers.pc += jump;
   }
@@ -193,7 +193,7 @@ static void beq(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define BEQ_INSTRUCTION() CPU_INSTRUCTION(beq, CPU_ADDRESSING_MODE_RELATIVE)
 
 static void bit(cpu_t *cpu, cpu_addressing_mode_t mode) {
-	uint8_t m = cpu_mem_read(cpu, mode);
+	uint8_t m = cpu_mem_read_u8(cpu, mode);
 	cpu->registers.a &= m;
 
 	if (m & (1 << 6)) {
@@ -277,7 +277,7 @@ static void clv(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define CLV_INSTRUCTION() CPU_INSTRUCTION(clv, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void compare(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t a) {
-  uint8_t m = cpu_mem_read(cpu, mode);
+  uint8_t m = cpu_mem_read_u8(cpu, mode);
 
   if (a >= m) {
     sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
@@ -307,40 +307,40 @@ static void cpy(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define CPY_INSTRUCTION(MODE) CPU_INSTRUCTION(cpy, MODE)
 
 static void lda(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu->registers.a = cpu_mem_read(cpu, mode);
+  cpu->registers.a = cpu_mem_read_u8(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.a);
 }
 
 #define LDA_INSTRUCTION(MODE) CPU_INSTRUCTION(lda, MODE)
 
 static void ldx(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu->registers.x = cpu_mem_read(cpu, mode);
+  cpu->registers.x = cpu_mem_read_u8(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.x);
 }
 
 #define LDX_INSTRUCTION(MODE) CPU_INSTRUCTION(ldx, MODE)
 
 static void ldy(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu->registers.y = cpu_mem_read(cpu, mode);
+  cpu->registers.y = cpu_mem_read_u8(cpu, mode);
   update_negative_zero_registers(cpu, cpu->registers.y);
 }
 
 #define LDY_INSTRUCTION(MODE) CPU_INSTRUCTION(ldy, MODE)
 
 static void sta(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu_mem_write(cpu, mode, cpu->registers.a);
+  cpu_mem_write_u8(cpu, mode, cpu->registers.a);
 }
 
 #define STA_INSTRUCTION(MODE) CPU_INSTRUCTION(sta, MODE)
 
 static void stx(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu_mem_write(cpu, mode, cpu->registers.x);
+  cpu_mem_write_u8(cpu, mode, cpu->registers.x);
 }
 
 #define STX_INSTRUCTION(MODE) CPU_INSTRUCTION(stx, MODE)
 
 static void sty(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu_mem_write(cpu, mode, cpu->registers.y);
+  cpu_mem_write_u8(cpu, mode, cpu->registers.y);
 }
 
 #define STY_INSTRUCTION(MODE) CPU_INSTRUCTION(sty, MODE)
@@ -432,7 +432,7 @@ static void iny(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define INY_INSTRUCTION() CPU_INSTRUCTION(iny, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void eor(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint8_t m = cpu_mem_read(cpu, mode);
+  uint8_t m = cpu_mem_read_u8(cpu, mode);
   cpu->registers.a ^= m;
   update_negative_zero_registers(cpu, cpu->registers.a);
 }
@@ -440,7 +440,7 @@ static void eor(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define EOR_INSTRUCTION(MODE) CPU_INSTRUCTION(eor, MODE)
 
 static void ora(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint8_t m = cpu_mem_read(cpu, mode);
+  uint8_t m = cpu_mem_read_u8(cpu, mode);
   cpu->registers.a |= m;
   update_negative_zero_registers(cpu, cpu->registers.a);
 }
