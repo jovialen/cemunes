@@ -210,115 +210,116 @@ void cpu_trace(cpu_t *cpu) {
   uint8_t b2 = bus_mem_read_u8(cpu->bus, cpu->registers.pc + 2);
   uint16_t bb = bus_mem_read_u16(cpu->bus, cpu->registers.pc + 1);
   
-  printf("%04X  %02X  ", cpu->registers.pc, opcode);
+  ptr += sprintf(ptr, "%04X  %02X  ", cpu->registers.pc, opcode);
 
   switch(get_addr_mode_byte_length(instruction->addr_mode)) {
     case 2:
-      printf("%02X %02X ", b1, b2);
+      ptr += sprintf(ptr, "%02X %02X ", b1, b2);
       break;
     case 1:
-      printf("%02X    ", b1);
+      ptr += sprintf(ptr, "%02X    ", b1);
       break;
     case 0:
-      printf("      ");
+      ptr += sprintf(ptr, "      ");
       break;
     default:
-      printf("error: unexpected opcode byte length ");
+      ptr += sprintf(ptr, "error: unexpected opcode byte length ");
       break;
   }
 
-  printf("%c%s ", instruction->unofficial ? '*' : ' ', instruction->name);
+  ptr += sprintf(ptr, "%c%s ", instruction->unofficial ? '*' : ' ', instruction->name);
 
   #ifdef CNES_TRACE_ADDR_MODE
   switch (instruction->addr_mode) {
-  case CPU_ADDRESSING_MODE_IMPLIED:     printf("(imp) "); break;
-  case CPU_ADDRESSING_MODE_ACCUMULATOR: printf("(acc) "); break;
-  case CPU_ADDRESSING_MODE_IMMEDIATE:   printf("(imm) "); break;
-  case CPU_ADDRESSING_MODE_RELATIVE:    printf("(rel) "); break;
-  case CPU_ADDRESSING_MODE_ZERO_PAGE:   printf("(zp ) "); break;
-  case CPU_ADDRESSING_MODE_ZERO_PAGE_X: printf("(zpx) "); break;
-  case CPU_ADDRESSING_MODE_ZERO_PAGE_Y: printf("(zpy) "); break;
-  case CPU_ADDRESSING_MODE_ABSOLUTE:    printf("(abs) "); break;
-  case CPU_ADDRESSING_MODE_ABSOLUTE_X:  printf("(abx) "); break;
-  case CPU_ADDRESSING_MODE_ABSOLUTE_Y:  printf("(aby) "); break;
-  case CPU_ADDRESSING_MODE_INDIRECT:    printf("(ind) "); break;
-  case CPU_ADDRESSING_MODE_INDIRECT_X:  printf("(izx) "); break;
-  case CPU_ADDRESSING_MODE_INDIRECT_Y:  printf("(izy) "); break;
-  default:                              printf("(err) "); break;
+  case CPU_ADDRESSING_MODE_IMPLIED:     ptr += sprintf(ptr, "(imp) "); break;
+  case CPU_ADDRESSING_MODE_ACCUMULATOR: ptr += sprintf(ptr, "(acc) "); break;
+  case CPU_ADDRESSING_MODE_IMMEDIATE:   ptr += sprintf(ptr, "(imm) "); break;
+  case CPU_ADDRESSING_MODE_RELATIVE:    ptr += sprintf(ptr, "(rel) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE:   ptr += sprintf(ptr, "(zp ) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE_X: ptr += sprintf(ptr, "(zpx) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE_Y: ptr += sprintf(ptr, "(zpy) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE:    ptr += sprintf(ptr, "(abs) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE_X:  ptr += sprintf(ptr, "(abx) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE_Y:  ptr += sprintf(ptr, "(aby) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT:    ptr += sprintf(ptr, "(ind) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT_X:  ptr += sprintf(ptr, "(izx) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT_Y:  ptr += sprintf(ptr, "(izy) "); break;
+  default:                              ptr += sprintf(ptr, "(err) "); break;
   }
   #endif
 
   switch (instruction->addr_mode) {
   case CPU_ADDRESSING_MODE_IMPLIED:
-    printf("                            ");
+    ptr += sprintf(ptr, "                            ");
     break;
   case CPU_ADDRESSING_MODE_ACCUMULATOR:
-    printf("A                           ");
+    ptr += sprintf(ptr, "A                           ");
     break;
   case CPU_ADDRESSING_MODE_IMMEDIATE:
-    printf("#$%02X                        ", b1);
+    ptr += sprintf(ptr, "#$%02X                        ", b1);
     break;
   case CPU_ADDRESSING_MODE_RELATIVE:
-    printf("$%04X                       ", cpu->registers.pc + b1 + 2);
+    ptr += sprintf(ptr, "$%04X                       ", cpu->registers.pc + b1 + 2);
     break;
   case CPU_ADDRESSING_MODE_ZERO_PAGE: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1);
-    printf("$%02X = %02X                    ", b1, addr);
+    ptr += sprintf(ptr, "$%02X = %02X                    ", b1, addr);
     break;
   }
   case CPU_ADDRESSING_MODE_ZERO_PAGE_X: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1 + cpu->registers.x);
-    printf("$%02X,X @ %02X = %02X             ", b1, b1 + cpu->registers.x, addr);
+    ptr += sprintf(ptr, "$%02X,X @ %02X = %02X             ", b1, b1 + cpu->registers.x, addr);
     break;
   }
   case CPU_ADDRESSING_MODE_ZERO_PAGE_Y: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1 + cpu->registers.y);
-    printf("$%02X,Y @ %02X = %02X             ", b1, b1 + cpu->registers.y, addr);
+    ptr += sprintf(ptr, "$%02X,Y @ %02X = %02X             ", b1, b1 + cpu->registers.y, addr);
     break;
   }
   case CPU_ADDRESSING_MODE_ABSOLUTE: {
-    printf("$%04X                       ", bb);
+    ptr += sprintf(ptr, "$%04X                       ", bb);
     break;
   }
   case CPU_ADDRESSING_MODE_ABSOLUTE_X: {
     uint16_t addr = bb + cpu->registers.x;
-    printf("$%04X,X @ %04X = %02X         ", bb, addr, bus_mem_read_u8(cpu->bus, addr));
+    ptr += sprintf(ptr, "$%04X,X @ %04X = %02X         ", bb, addr, bus_mem_read_u8(cpu->bus, addr));
     break;
   }
   case CPU_ADDRESSING_MODE_ABSOLUTE_Y: {
     uint16_t addr = bb + cpu->registers.y;
-    printf("$%04X,Y @ %04X = %02X         ", bb, addr, bus_mem_read_u8(cpu->bus, addr));
+    ptr += sprintf(ptr, "$%04X,Y @ %04X = %02X         ", bb, addr, bus_mem_read_u8(cpu->bus, addr));
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT: {
     uint16_t addr = bus_mem_read_u16(cpu->bus, bb);
-    printf("($%04X) = %04X              ", bb, addr);
+    ptr += sprintf(ptr, "($%04X) = %04X              ", bb, addr);
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
     uint8_t addr = bus_mem_read_u8(cpu->bus, b1) + cpu->registers.x;
     uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr);
-    printf("($%02X,X) @ %02X = %04X = %02X    ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
+    ptr += sprintf(ptr, "($%02X,X) @ %02X = %04X = %02X    ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT_Y: {
     uint16_t addr = bus_mem_read_u8(cpu->bus, b1);
     uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr) + cpu->registers.y;
-    printf("($%02X),Y = %04X @ %04X = %02X  ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
+    ptr += sprintf(ptr, "($%02X),Y = %04X @ %04X = %02X  ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }
   default:
-    printf("cannot format addr mode     ");
+    ptr += sprintf(ptr, "cannot format addr mode     ");
     break;
   }
 
-  printf("A:%02X X:%02X Y:%02X P:%02X SP:%02X",
+  ptr += sprintf(ptr, "A:%02X X:%02X Y:%02X P:%02X SP:%02X",
     cpu->registers.a,
     cpu->registers.x,
     cpu->registers.y,
     cpu->registers.flags,
     cpu->registers.s
   );
+  *ptr = '\0';
 
-  printf("\n");
+  log_trace("%s", buffer);
 }
