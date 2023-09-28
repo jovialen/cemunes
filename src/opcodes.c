@@ -474,8 +474,7 @@ static void plp(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 static void rti(cpu_t *cpu, cpu_addressing_mode_t mode) {
   plp(cpu, CPU_ADDRESSING_MODE_IMPLIED);
-  rts(cpu, CPU_ADDRESSING_MODE_IMPLIED);
-  cpu->registers.pc--;
+  cpu->registers.pc = cpu_stack_pop_u16(cpu);
 }
 
 #define RTI_INSTRUCTION() CPU_INSTRUCTION(rti, CPU_ADDRESSING_MODE_IMPLIED)
