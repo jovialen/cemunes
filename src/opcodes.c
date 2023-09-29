@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "log.h"
+
 #define CPU_INSTRUCTION(FUNC, MODE)            { .valid = true, .unofficial = false, .name = #FUNC, .func = &FUNC, .addr_mode = MODE }
 #define UNOFFICIAL_CPU_INSTRUCTION(FUNC, MODE) { .valid = true, .unofficial = true,  .name = #FUNC, .func = &FUNC, .addr_mode = MODE }
 
@@ -12,38 +14,67 @@
 
 static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
   if (a == 0) {
-    cpu->registers.flags |= CPU_STATUS_FLAG_ZERO;
+    sez(cpu);
   } else {
-    cpu->registers.flags &= ~CPU_STATUS_FLAG_ZERO;
+    clz(cpu);
   }
 
   if (a & CPU_STATUS_FLAG_NEGATIVE) {
-    cpu->registers.flags &= ~CPU_STATUS_FLAG_NEGATIVE;
+    sen(cpu);
   } else {
-    cpu->registers.flags |= CPU_STATUS_FLAG_NEGATIVE;
+    cln(cpu);
   }
+}
+
+static void sez(cpu_t *cpu) {
+  cpu->registers.flags |= CPU_STATUS_FLAG_ZERO;
+  log_trace("setting zero flag");
+}
+
+static void sev(cpu_t *cpu, cpu_addressing_mode_t mode) {
+    cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
+    log_trace("setting overflow flag");
+}
+
+static void clz(cpu_t *cpu) {
+  cpu->registers.flags &= ~CPU_STATUS_FLAG_ZERO;
+  log_trace("clearing zero flag");
+}
+
+static void sen(cpu_t *cpu) {
+  cpu->registers.flags |= CPU_STATUS_FLAG_NEGATIVE;
+  log_trace("setting negative flag");
+}
+
+static void cln(cpu_t *cpu) {
+  cpu->registers.flags &= ~CPU_STATUS_FLAG_NEGATIVE;
+  log_trace("clearing negative flag");
 }
 
 static void sec(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags |= CPU_STATUS_FLAG_CARRY;
+  log_trace("setting carry flag");
 }
 
 #define SEC_INSTRUCTION() CPU_INSTRUCTION(sec, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void sed(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags |= CPU_STATUS_FLAG_DECIMAL;
+  log_trace("setting decimal flag");
 }
 
 #define SED_INSTRUCTION() CPU_INSTRUCTION(sed, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void sei(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags |= CPU_STATUS_FLAG_INT_DISABLE;
+  log_trace("setting interupt disable flag");
 }
 
 #define SEI_INSTRUCTION() CPU_INSTRUCTION(sei, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void clc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_CARRY;
+  log_trace("clearing carry flag");
 }
 
 #define CLC_INSTRUCTION() CPU_INSTRUCTION(clc, CPU_ADDRESSING_MODE_IMPLIED)
@@ -59,9 +90,9 @@ static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   }
 
   if ((b ^ cpu->registers.a) & (b ^ new_a) & 0x80) {
-    cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
+    sev(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   } else {
-    cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+    clv(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   }
 
   cpu->registers.a = new_a;
@@ -82,9 +113,9 @@ static void sbc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t new_a = cpu->registers.a - b;
 
   if ((b ^ cpu->registers.a) & (b ^ new_a) & 0x80) {
-    cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
+    sev(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   } else {
-    cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+    clv(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   }
 
   cpu->registers.a -= new_a;
@@ -197,9 +228,9 @@ static void bit(cpu_t *cpu, cpu_addressing_mode_t mode) {
 	cpu->registers.a &= m;
 
 	if (m & (1 << 6)) {
-		cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
+        sev(cpu, CPU_ADDRESSING_MODE_IMPLIED);
 	} else {
-		cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+        clv(cpu, CPU_ADDRESSING_MODE_IMPLIED);
 	}
 	
 	update_negative_zero_registers(cpu, cpu->registers.a);
@@ -260,18 +291,21 @@ static void rts(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 static void cld(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_DECIMAL;
+  log_trace("clearing decimal flag");
 }
 
 #define CLD_INSTRUCTION() CPU_INSTRUCTION(cld, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void cli(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_INT_DISABLE;
+  log_trace("clearing interupt disable flag")
 }
 
 #define CLI_INSTRUCTION() CPU_INSTRUCTION(cli, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void clv(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+  log_trace("clearing overflow flag");
 }
 
 #define CLV_INSTRUCTION() CPU_INSTRUCTION(clv, CPU_ADDRESSING_MODE_IMPLIED)
