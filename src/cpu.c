@@ -122,7 +122,7 @@ void cpu_stack_push_u8(cpu_t *cpu, uint8_t value) {
   }
   
   log_trace("pushing %02X to stack at $%02X", value, cpu->registers.s);
-  bus_mem_write_u8(cpu->bus, STACK_START_ADDR + cpu->registers.s, value);
+  bus_mem_write_u8(cpu->bus, STACK_START_ADDR - cpu->registers.s, value);
   cpu->registers.s++;
 }
 
@@ -133,7 +133,7 @@ uint8_t cpu_stack_pop_u8(cpu_t *cpu) {
   }
   
   cpu->registers.s--;
-  uint8_t value = bus_mem_read_u8(cpu->bus, STACK_START_ADDR + cpu->registers.s);
+  uint8_t value = bus_mem_read_u8(cpu->bus, STACK_START_ADDR - cpu->registers.s);
 
   log_trace("popping %02X from stack at $%02X", value, cpu->registers.s);
   return value;
