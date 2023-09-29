@@ -36,15 +36,12 @@ static uint16_t get_address(cpu_t *cpu, cpu_addressing_mode_t mode) {
     return bus_mem_read_u16(cpu->bus, addr);
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
-    uint8_t addr = bus_mem_read_u8(cpu->bus, cpu->registers.pc) + cpu->registers.x;
-    uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr);
-    log_trace("%02X %04X %04X", addr, (uint16_t) addr, ind);
-    return bus_mem_read_u16(cpu->bus, ind);
+    uint8_t addr = cpu->registers.pc + cpu->registers.x;
+    return bus_mem_read_u16_zero_page(cpu->bus, addr);
   }
   case CPU_ADDRESSING_MODE_INDIRECT_Y: {
-    uint8_t addr = bus_mem_read_u8(cpu->bus, cpu->registers.pc);
-    uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr);
-    return ind + cpu->registers.y;
+    uint16_t addr = bus_mem_read_u16_zero_page(cpu->bus, cpu->registers.pc);
+    return addr + cpu->registers.y;
   }
   case CPU_ADDRESSING_MODE_IMPLIED:
     log_error("cannot find address; address should be implied");
@@ -173,7 +170,6 @@ void cpu_run_from(cpu_t *cpu, uint16_t start) {
 }
 
 uint8_t cpu_step(cpu_t *cpu) {
-  cpu_trace(cpu);
   uint8_t op = fetch_op(cpu);
   const cpu_instruction_t *instruction = &INSTRUCTIONS[op];
 
@@ -181,15 +177,19 @@ uint8_t cpu_step(cpu_t *cpu) {
     instruction->func(cpu, instruction->addr_mode);
   }
 
+  cpu_trace(cpu);
   return op && instruction->valid;
 }
 
 void cpu_trace(cpu_t *cpu) {
+  char buffer[124];
+  char *ptr = &buffer[0];
+
   uint8_t opcode = bus_mem_read_u8(cpu->bus, cpu->registers.pc);
   const cpu_instruction_t *instruction = &INSTRUCTIONS[opcode];
 
   if (!instruction->valid) {
-    printf(
+    ptr += sprintf(ptr,
     #ifdef CNES_TRACE_ADDR_MODE
       "%04X  %02X             (err) instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
     #else
@@ -296,14 +296,15 @@ void cpu_trace(cpu_t *cpu) {
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
-    uint8_t addr = bus_mem_read_u8(cpu->bus, b1) + cpu->registers.x;
+    uint8_t addr = b1 + cpu->registers.x;
     uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr);
     ptr += sprintf(ptr, "($%02X,X) @ %02X = %04X = %02X    ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }
   case CPU_ADDRESSING_MODE_INDIRECT_Y: {
-    uint16_t addr = bus_mem_read_u8(cpu->bus, b1);
-    uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr) + cpu->registers.y;
+    uint16_t addr = bus_mem_read_u16_zero_page(cpu->bus, b1);
+    uint16_t ind = addr + cpu->registers.y;
+    // uint16_t ind = bus_mem_read_u16_zero_page(cpu->bus, addr) + cpu->registers.y;
     ptr += sprintf(ptr, "($%02X),Y = %04X @ %04X = %02X  ", b1, addr, ind, bus_mem_read_u8(cpu->bus, ind));
     break;
   }
