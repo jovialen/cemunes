@@ -69,6 +69,8 @@ args_t parse_args(int argc, char **argv) {
 
 int main(int argc, char **argv) {
 	log_set_output_file(fopen("cnes.log", "w"));
+	log_set_file_log_level(LOG_LEVEL_DEBUG);
+
 	log_info("initializing...");
 
 	args_t args = parse_args(argc, argv);

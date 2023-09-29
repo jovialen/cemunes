@@ -29,6 +29,7 @@ typedef enum log_level_t {
 } log_level_t;
 
 FILE *log_set_output_file(FILE *file);
+void log_set_file_log_level(log_level_t level);
 void log_log(log_level_t level, const char *file, int line, const char *func, const char *fmt, ...);
 
 #define log_trace(fmt, ...)  log_log(LOG_LEVEL_TRACE, __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__)

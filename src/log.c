@@ -7,11 +7,16 @@ static const char *LEVEL_STR[] = { "TRACE", "DEBUG", "INFO ", "WARN ", "ERROR", 
 static const char *LEVEL_COL[] = { "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[35m" };
 
 static FILE *log_file = NULL;
+static log_level_t log_file_level = LOG_LEVEL_TRACE;
 
 FILE *log_set_output_file(FILE *file) {
 	FILE *prev = log_file;
 	log_file = file;
 	return prev;
+}
+
+void log_set_file_log_level(log_level_t level) {
+	log_file_level = level;
 }
 
 void log_log(log_level_t level, const char *file, int line, const char *func, const char *fmt, ...) {
@@ -36,7 +41,7 @@ void log_log(log_level_t level, const char *file, int line, const char *func, co
 	}
 
 	printf("%s", output);
-	if (log_file != NULL && output != NULL) {
+	if (log_file != NULL && output != NULL && level >= log_file_level) {
 		fwrite(output, 1, 1 + size, log_file);
 	}
 
