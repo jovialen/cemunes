@@ -68,6 +68,7 @@ args_t parse_args(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+	log_set_output_file(fopen("cnes.log", "w"));
 	log_info("initializing...");
 
 	args_t args = parse_args(argc, argv);
@@ -105,5 +106,6 @@ int main(int argc, char **argv) {
 	log_info("shutting down");
 	bus_free(bus);
 	cartridge_free(cart);
+	fclose(log_set_output_file(NULL));
 	return 0;
 }

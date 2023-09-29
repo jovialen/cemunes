@@ -9,6 +9,7 @@
 #endif
 
 #include <string.h>
+#include <stdio.h>
 
 #ifdef _WIN32
 #define __FILENAME__ (strrchr("\\" __FILE__, '\\') + 1)
@@ -27,6 +28,7 @@ typedef enum log_level_t {
 	LOG_LEVEL_OFF,
 } log_level_t;
 
+FILE *log_set_output_file(FILE *file);
 void log_log(log_level_t level, const char *file, int line, const char *func, const char *fmt, ...);
 
 #define log_trace(fmt, ...)  log_log(LOG_LEVEL_TRACE, __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__)
