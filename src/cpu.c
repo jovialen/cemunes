@@ -160,6 +160,8 @@ void cpu_load_cartridge(cpu_t *cpu, const cartridge_t *cart) {
 void cpu_reset(cpu_t *cpu) {
   cpu->registers = (cpu_registers_t) { 0 };
   cpu->registers.pc = bus_mem_read_u16(cpu->bus, RESET_VECTOR);
+  cpu->registers.flags |= CPU_STATUS_FLAG_INT_DISABLE;
+  cpu->registers.flags |= CPU_STATUS_FLAG_B2;
 }
 
 void cpu_run(cpu_t *cpu) {
@@ -174,6 +176,8 @@ void cpu_run_from(cpu_t *cpu, uint16_t start) {
 }
 
 uint8_t cpu_step(cpu_t *cpu) {
+  cpu_trace(cpu);
+
   uint8_t op = fetch_op(cpu);
   const cpu_instruction_t *instruction = &INSTRUCTIONS[op];
 
@@ -181,7 +185,6 @@ uint8_t cpu_step(cpu_t *cpu) {
     instruction->func(cpu, instruction->addr_mode);
   }
 
-  cpu_trace(cpu);
   return op && instruction->valid;
 }
 
@@ -223,7 +226,7 @@ void cpu_trace(cpu_t *cpu) {
       m = bus_mem_read_u8(cpu->bus, addr);
   }
   
-  ptr += sprintf(ptr, "%04X  %02X  ", cpu->registers.pc, opcode);
+  ptr += sprintf(ptr, "%04X  %02X ", cpu->registers.pc, opcode);
 
   switch(get_addr_mode_byte_length(instruction->addr_mode)) {
     case 2:

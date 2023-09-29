@@ -33,6 +33,8 @@ typedef enum cpu_status_flag_t {
 	CPU_STATUS_FLAG_ZERO        = (1 << 1),
 	CPU_STATUS_FLAG_INT_DISABLE = (1 << 2),
 	CPU_STATUS_FLAG_DECIMAL     = (1 << 3),
+	CPU_STATUS_FLAG_B1          = (1 << 4),
+	CPU_STATUS_FLAG_B2          = (1 << 5),
 	CPU_STATUS_FLAG_OVERFLOW    = (1 << 6),
 	CPU_STATUS_FLAG_NEGATIVE    = (1 << 7),
 } cpu_status_flag_t;
