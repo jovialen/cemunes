@@ -127,6 +127,7 @@ static void sbc(cpu_t *cpu, cpu_addressing_mode_t mode) {
 }
 
 #define SBC_INSTRUCTION(MODE) CPU_INSTRUCTION(sbc, MODE)
+#define UNOFFICIAL_SBC_INSTRUCTION() UNOFFICIAL_CPU_INSTRUCTION(sbc, CPU_ADDRESSING_MODE_IMMEDIATE)
 
 static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read_u8(cpu, mode);
@@ -750,4 +751,6 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x97] = SAX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_Y),
   [0x83] = SAX_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x8f] = SAX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+
+  [0xeb] = UNOFFICIAL_SBC_INSTRUCTION(),
 };
