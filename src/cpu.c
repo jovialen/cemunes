@@ -44,6 +44,11 @@ static uint16_t get_address(cpu_t *cpu, uint16_t pc, cpu_addressing_mode_t mode)
     uint16_t addr = bus_mem_read_u16_zero_page(cpu->bus, bus_mem_read_u8(cpu->bus, pc));
     return addr + cpu->registers.y;
   }
+  case CPU_ADDRESSING_MODE_RELATIVE: {
+    int8_t offset = (int8_t) bus_mem_read_u8(cpu->bus, pc);
+    // current pos + the offset byte in the instruction + the offset
+    return (uint16_t) (((int32_t) pc + 1 + offset) % 0x10000);
+  }
   case CPU_ADDRESSING_MODE_IMPLIED:
     log_error("cannot find address; address should be implied");
     return 0;
@@ -168,7 +173,7 @@ void cpu_reset(cpu_t *cpu) {
 
 void cpu_run(cpu_t *cpu) {
   cpu_reset(cpu);
-  while (cpu_step(cpu));
+  cpu_run_from(cpu, cpu->registers.pc);
 }
 
 void cpu_run_from(cpu_t *cpu, uint16_t start) {
@@ -200,9 +205,9 @@ void cpu_trace(cpu_t *cpu) {
   if (!instruction->valid) {
     ptr += sprintf(ptr,
     #ifdef CNES_TRACE_ADDR_MODE
-      "%04X  %02X             (err) instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
+      "%04X  %02X            (err) instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
     #else
-      "%04X  %02X             instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
+      "%04X  %02X            instruction not implemented A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
     #endif
       cpu->registers.pc,
       opcode,
@@ -212,6 +217,7 @@ void cpu_trace(cpu_t *cpu) {
       cpu->registers.flags,
       cpu->registers.s
     );
+    log_debug("%s", buffer);
     return;
   }
 
@@ -222,8 +228,7 @@ void cpu_trace(cpu_t *cpu) {
   uint16_t addr;
   uint8_t m;
   if (instruction->addr_mode != CPU_ADDRESSING_MODE_IMPLIED &&
-      instruction->addr_mode != CPU_ADDRESSING_MODE_ACCUMULATOR &&
-      instruction->addr_mode != CPU_ADDRESSING_MODE_RELATIVE) {
+      instruction->addr_mode != CPU_ADDRESSING_MODE_ACCUMULATOR) {
       addr = get_address(cpu, cpu->registers.pc + 1, instruction->addr_mode);
       m = bus_mem_read_u8(cpu->bus, addr);
   }
@@ -278,7 +283,7 @@ void cpu_trace(cpu_t *cpu) {
     ptr += sprintf(ptr, "#$%02X                        ", b1);
     break;
   case CPU_ADDRESSING_MODE_RELATIVE:
-    ptr += sprintf(ptr, "$%04X                       ", cpu->registers.pc + b1 + 2);
+    ptr += sprintf(ptr, "$%04X                       ", addr);
     break;
   case CPU_ADDRESSING_MODE_ZERO_PAGE:
     ptr += sprintf(ptr, "$%02X = %02X                    ", addr, m);

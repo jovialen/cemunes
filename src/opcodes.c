@@ -203,9 +203,9 @@ static void ror(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define ROR_INSTRUCTION(MODE) CPU_INSTRUCTION(ror, MODE)
 
 static void branch(cpu_t *cpu, bool condition) {
-  uint8_t jump = cpu_mem_read_u8(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
+  uint16_t jump = cpu_read_address(cpu, CPU_ADDRESSING_MODE_RELATIVE);
   if (condition) {
-    cpu->registers.pc += jump;
+    cpu->registers.pc = jump;
   }
 }
 
