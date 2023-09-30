@@ -287,7 +287,7 @@ static void jsr(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.pc = addr;
 }
 
-#define JSR_INSTRUCTION() CPU_INSTRUCTION(jsr, CPU_ADDRESSING_MODE_ABSOLUTE)
+#define JSR_INSTRUCTION() CPU_INSTRUCTION(jsr, CPU_ADDRESSING_MODE_ABSOLUTE_ADDR)
 
 static void rts(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint16_t addr = cpu_stack_pop_u16(cpu) + 1;
@@ -677,7 +677,7 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x01] = ORA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
   [0x11] = ORA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
 
-  [0x4c] = JMP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x4c] = JMP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_ADDR),
   [0x6c] = JMP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT),
   [0x20] = JSR_INSTRUCTION(),
   [0x60] = RTS_INSTRUCTION(),

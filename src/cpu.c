@@ -21,6 +21,7 @@ static uint16_t get_address(cpu_t *cpu, uint16_t base, cpu_addressing_mode_t mod
   case CPU_ADDRESSING_MODE_ZERO_PAGE_Y:
     return (uint16_t) (bus_mem_read_u8(cpu->bus, base) + cpu->registers.y) % 0x100;
   case CPU_ADDRESSING_MODE_ABSOLUTE:
+  case CPU_ADDRESSING_MODE_ABSOLUTE_ADDR:
     return bus_mem_read_u16(cpu->bus, base);
   case CPU_ADDRESSING_MODE_ABSOLUTE_X:
     return bus_mem_read_u16(cpu->bus, base) + cpu->registers.x;
@@ -67,6 +68,7 @@ static uint16_t get_addr_mode_byte_length(cpu_addressing_mode_t mode) {
   case CPU_ADDRESSING_MODE_INDIRECT_Y:
     return 1;
   case CPU_ADDRESSING_MODE_ABSOLUTE:
+  case CPU_ADDRESSING_MODE_ABSOLUTE_ADDR:
   case CPU_ADDRESSING_MODE_ABSOLUTE_X:
   case CPU_ADDRESSING_MODE_ABSOLUTE_Y:
     return 2;
@@ -247,20 +249,21 @@ void cpu_trace(cpu_t *cpu) {
 
   #ifdef CNES_TRACE_ADDR_MODE
   switch (instruction->addr_mode) {
-  case CPU_ADDRESSING_MODE_IMPLIED:     ptr += sprintf(ptr, "(imp) "); break;
-  case CPU_ADDRESSING_MODE_ACCUMULATOR: ptr += sprintf(ptr, "(acc) "); break;
-  case CPU_ADDRESSING_MODE_IMMEDIATE:   ptr += sprintf(ptr, "(imm) "); break;
-  case CPU_ADDRESSING_MODE_RELATIVE:    ptr += sprintf(ptr, "(rel) "); break;
-  case CPU_ADDRESSING_MODE_ZERO_PAGE:   ptr += sprintf(ptr, "(zp ) "); break;
-  case CPU_ADDRESSING_MODE_ZERO_PAGE_X: ptr += sprintf(ptr, "(zpx) "); break;
-  case CPU_ADDRESSING_MODE_ZERO_PAGE_Y: ptr += sprintf(ptr, "(zpy) "); break;
-  case CPU_ADDRESSING_MODE_ABSOLUTE:    ptr += sprintf(ptr, "(abs) "); break;
-  case CPU_ADDRESSING_MODE_ABSOLUTE_X:  ptr += sprintf(ptr, "(abx) "); break;
-  case CPU_ADDRESSING_MODE_ABSOLUTE_Y:  ptr += sprintf(ptr, "(aby) "); break;
-  case CPU_ADDRESSING_MODE_INDIRECT:    ptr += sprintf(ptr, "(ind) "); break;
-  case CPU_ADDRESSING_MODE_INDIRECT_X:  ptr += sprintf(ptr, "(izx) "); break;
-  case CPU_ADDRESSING_MODE_INDIRECT_Y:  ptr += sprintf(ptr, "(izy) "); break;
-  default:                              ptr += sprintf(ptr, "(err) "); break;
+  case CPU_ADDRESSING_MODE_IMPLIED:       ptr += sprintf(ptr, "(imp) "); break;
+  case CPU_ADDRESSING_MODE_ACCUMULATOR:   ptr += sprintf(ptr, "(acc) "); break;
+  case CPU_ADDRESSING_MODE_IMMEDIATE:     ptr += sprintf(ptr, "(imm) "); break;
+  case CPU_ADDRESSING_MODE_RELATIVE:      ptr += sprintf(ptr, "(rel) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE:     ptr += sprintf(ptr, "(zp ) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE_X:   ptr += sprintf(ptr, "(zpx) "); break;
+  case CPU_ADDRESSING_MODE_ZERO_PAGE_Y:   ptr += sprintf(ptr, "(zpy) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE_ADDR:
+  case CPU_ADDRESSING_MODE_ABSOLUTE:      ptr += sprintf(ptr, "(abs) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE_X:    ptr += sprintf(ptr, "(abx) "); break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE_Y:    ptr += sprintf(ptr, "(aby) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT:      ptr += sprintf(ptr, "(ind) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT_X:    ptr += sprintf(ptr, "(izx) "); break;
+  case CPU_ADDRESSING_MODE_INDIRECT_Y:    ptr += sprintf(ptr, "(izy) "); break;
+  default:                                ptr += sprintf(ptr, "(err) "); break;
   }
   #endif
 
@@ -287,6 +290,9 @@ void cpu_trace(cpu_t *cpu) {
     ptr += sprintf(ptr, "$%02X,Y @ %02X = %02X             ", b1, addr, m);
     break;
   case CPU_ADDRESSING_MODE_ABSOLUTE:
+    ptr += sprintf(ptr, "$%04X = %02X                  ", addr, m);
+    break;
+  case CPU_ADDRESSING_MODE_ABSOLUTE_ADDR:
     ptr += sprintf(ptr, "$%04X                       ", addr);
     break;
   case CPU_ADDRESSING_MODE_ABSOLUTE_X:
