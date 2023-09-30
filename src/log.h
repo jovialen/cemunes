@@ -32,13 +32,13 @@ FILE *log_set_output_file(FILE *file);
 void log_set_file_log_level(log_level_t level);
 void log_log(log_level_t level, const char *file, int line, const char *func, const char *fmt, ...);
 
-#define log_trace(fmt, ...)  log_log(LOG_LEVEL_TRACE, __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__)
-#define log_debug(fmt, ...)  log_log(LOG_LEVEL_DEBUG, __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__)
-#define log_info(fmt, ...)   log_log(LOG_LEVEL_INFO,  __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__)
-#define log_warn(fmt, ...)   log_log(LOG_LEVEL_WARN,  __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__)
-#define log_error(fmt, ...)  (log_log(LOG_LEVEL_ERROR, __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__), BREAK())
-#define log_fatal(fmt, ...)  (log_log(LOG_LEVEL_FATAL, __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__), BREAK())
-#define log(level, fmt, ...) { log_log(level, __FILENAME__, __LINE__, __func__, fmt, __VA_ARGS__); if (level >= LOG_LEVEL_WARN) { BREAK(); } }
+#define log_trace(fmt, ...)  log_log(LOG_LEVEL_TRACE, __FILENAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define log_debug(fmt, ...)  log_log(LOG_LEVEL_DEBUG, __FILENAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define log_info(fmt, ...)   log_log(LOG_LEVEL_INFO,  __FILENAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define log_warn(fmt, ...)   log_log(LOG_LEVEL_WARN,  __FILENAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define log_error(fmt, ...)  (log_log(LOG_LEVEL_ERROR, __FILENAME__, __LINE__, __func__, fmt, ##__VA_ARGS__), BREAK())
+#define log_fatal(fmt, ...)  (log_log(LOG_LEVEL_FATAL, __FILENAME__, __LINE__, __func__, fmt, ##__VA_ARGS__), BREAK())
+#define log(level, fmt, ...) { log_log(level, __FILENAME__, __LINE__, __func__, fmt, ##__VA_ARGS__); if (level >= LOG_LEVEL_WARN) { BREAK(); } }
 
 
 #endif /* __cnes_log_h__ */
