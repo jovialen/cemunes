@@ -129,6 +129,19 @@ static void sbc(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define SBC_INSTRUCTION(MODE) CPU_INSTRUCTION(sbc, MODE)
 #define UNOFFICIAL_SBC_INSTRUCTION() UNOFFICIAL_CPU_INSTRUCTION(sbc, CPU_ADDRESSING_MODE_IMMEDIATE)
 
+static void dcp(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *m = cpu_mem_addr(cpu, mode);
+  *m -= 1;
+
+  if (*m <= cpu->registers.a) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  update_negative_zero_registers(cpu, cpu->registers.a - *m);
+}
+
+#define DCP_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(dcp, MODE)
+
 static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read_u8(cpu, mode);
   cpu->registers.a &= m;
@@ -753,4 +766,12 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x8f] = SAX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
 
   [0xeb] = UNOFFICIAL_SBC_INSTRUCTION(),
+
+  [0xc7] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xd7] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0xc3] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0xd3] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  [0xcf] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xdf] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0xdb] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
 };
