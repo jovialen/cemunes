@@ -9,7 +9,7 @@
 #include "cartridge.h"
 
 #define INSTRUCTION_COUNT 256
-#define STACK_START_ADDR 0x1FF
+#define STACK_START_ADDR 0x100
 
 
 typedef enum cpu_addressing_mode_t {

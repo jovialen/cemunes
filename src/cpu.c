@@ -116,24 +116,24 @@ void cpu_mem_write_u8(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t value) {
 }
 
 void cpu_stack_push_u8(cpu_t *cpu, uint8_t value) {
-  if (cpu->registers.s == 0xFF) {
+  if (cpu->registers.s == 0x0) {
     log_error("stack overflow");
     return;
   }
   
   log_trace("pushing %02X to stack at $%02X", value, cpu->registers.s);
-  bus_mem_write_u8(cpu->bus, STACK_START_ADDR - cpu->registers.s, value);
-  cpu->registers.s++;
+  bus_mem_write_u8(cpu->bus, STACK_START_ADDR + cpu->registers.s, value);
+  cpu->registers.s--;
 }
 
 uint8_t cpu_stack_pop_u8(cpu_t *cpu) {
-  if (cpu->registers.s == 0) {
+  if (cpu->registers.s == 0xFF) {
     log_error("stack underflow");
     return 0;
   }
   
-  cpu->registers.s--;
-  uint8_t value = bus_mem_read_u8(cpu->bus, STACK_START_ADDR - cpu->registers.s);
+  cpu->registers.s++;
+  uint8_t value = bus_mem_read_u8(cpu->bus, STACK_START_ADDR + cpu->registers.s);
 
   log_trace("popping %02X from stack at $%02X", value, cpu->registers.s);
   return value;
@@ -160,8 +160,8 @@ void cpu_load_cartridge(cpu_t *cpu, const cartridge_t *cart) {
 void cpu_reset(cpu_t *cpu) {
   cpu->registers = (cpu_registers_t) { 0 };
   cpu->registers.pc = bus_mem_read_u16(cpu->bus, RESET_VECTOR);
-  cpu->registers.flags |= CPU_STATUS_FLAG_INT_DISABLE;
-  cpu->registers.flags |= CPU_STATUS_FLAG_B2;
+  cpu->registers.s = 0xfd;
+  cpu->registers.flags = CPU_STATUS_FLAG_INT_DISABLE | CPU_STATUS_FLAG_B2;
 }
 
 void cpu_run(cpu_t *cpu) {
