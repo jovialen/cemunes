@@ -86,11 +86,8 @@ static void clv(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define CLV_INSTRUCTION() CPU_INSTRUCTION(clv, CPU_ADDRESSING_MODE_IMPLIED)
 
-static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint8_t m = cpu_mem_read_u8(cpu, mode);
-  uint8_t c = (cpu->registers.flags & CPU_STATUS_FLAG_CARRY) ? 1 : 0;
-  uint16_t v = (uint16_t) m + (uint16_t) c;
-  uint16_t sum = (uint16_t) cpu->registers.a + v;
+static void add_carry(cpu_t *cpu, uint8_t b, uint8_t carry) {
+  uint16_t sum = (uint16_t) cpu->registers.a + (uint16_t) b + (uint16_t) carry;
   
   if (sum > 0xFF) {
     sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
@@ -98,7 +95,7 @@ static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
     clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   }
 
-  if ((cpu->registers.a ^ sum) & (m ^ sum) & 0x80) {
+  if ((cpu->registers.a ^ sum) & (b ^ sum) & 0x80) {
     sev(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   } else {
     clv(cpu, CPU_ADDRESSING_MODE_IMPLIED);
@@ -108,27 +105,18 @@ static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   update_negative_zero_registers(cpu, cpu->registers.a);
 }
 
+static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t m = cpu_mem_read_u8(cpu, mode);
+  uint8_t c = (cpu->registers.flags & CPU_STATUS_FLAG_CARRY) ? 1 : 0;
+  add_carry(cpu, m, c);
+}
+
 #define ADC_INSTRUCTION(MODE) CPU_INSTRUCTION(adc, MODE)
 
 static void sbc(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint8_t b = cpu_mem_read_u8(cpu, mode) + ~(cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
-
-  if (cpu->registers.a < b) {
-    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
-  } else {
-    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
-  }
-  
-  uint8_t new_a = cpu->registers.a - b;
-
-  if ((b ^ cpu->registers.a) & (b ^ new_a) & 0x80) {
-    sev(cpu, CPU_ADDRESSING_MODE_IMPLIED);
-  } else {
-    clv(cpu, CPU_ADDRESSING_MODE_IMPLIED);
-  }
-
-  cpu->registers.a -= new_a;
-  update_negative_zero_registers(cpu, new_a);
+  uint8_t m = cpu_mem_read_u8(cpu, mode);
+  uint8_t c = (cpu->registers.flags & CPU_STATUS_FLAG_CARRY) ? 0 : 1;
+  add_carry(cpu, (~m), 1 - c);
 }
 
 #define SBC_INSTRUCTION(MODE) CPU_INSTRUCTION(sbc, MODE)
