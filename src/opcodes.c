@@ -221,22 +221,22 @@ static void beq(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define BEQ_INSTRUCTION() CPU_INSTRUCTION(beq, CPU_ADDRESSING_MODE_RELATIVE)
 
 static void bit(cpu_t *cpu, cpu_addressing_mode_t mode) {
-	uint8_t m = cpu_mem_read_u8(cpu, mode);
-	cpu->registers.a &= m;
+	uint8_t mask = cpu_mem_read_u8(cpu, mode);
+	uint8_t result = cpu->registers.a & mask;
 
-  if (cpu->registers.a == 0) {
+  if (result == 0) {
     sez(cpu);
   } else {
     clz(cpu);
   }
 
-	if (m & CPU_STATUS_FLAG_OVERFLOW) {
+	if (mask & CPU_STATUS_FLAG_OVERFLOW) {
         sev(cpu, CPU_ADDRESSING_MODE_IMPLIED);
 	} else {
         clv(cpu, CPU_ADDRESSING_MODE_IMPLIED);
 	}
 
-	if (m & CPU_STATUS_FLAG_NEGATIVE) {
+	if (mask & CPU_STATUS_FLAG_NEGATIVE) {
         sen(cpu);
 	} else {
         cln(cpu);
