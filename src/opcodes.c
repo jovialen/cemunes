@@ -87,23 +87,25 @@ static void clv(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define CLV_INSTRUCTION() CPU_INSTRUCTION(clv, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  uint8_t b = cpu_mem_read_u8(cpu, mode) + (cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
-  uint8_t new_a = cpu->registers.a + b;
+  uint8_t m = cpu_mem_read_u8(cpu, mode);
+  uint8_t c = (cpu->registers.flags & CPU_STATUS_FLAG_CARRY) ? 1 : 0;
+  uint16_t v = (uint16_t) m + (uint16_t) c;
+  uint16_t sum = (uint16_t) cpu->registers.a + v;
   
-  if (cpu->registers.a > new_a) {
+  if (sum > 0xFF) {
     sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   } else {
     clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   }
 
-  if ((b ^ cpu->registers.a) & (b ^ new_a) & 0x80) {
+  if ((cpu->registers.a ^ sum) & (m ^ sum) & 0x80) {
     sev(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   } else {
     clv(cpu, CPU_ADDRESSING_MODE_IMPLIED);
   }
 
-  cpu->registers.a = new_a;
-  update_negative_zero_registers(cpu, new_a);
+  cpu->registers.a = (uint8_t) (sum % 0x100);
+  update_negative_zero_registers(cpu, cpu->registers.a);
 }
 
 #define ADC_INSTRUCTION(MODE) CPU_INSTRUCTION(adc, MODE)
