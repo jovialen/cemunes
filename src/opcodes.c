@@ -142,6 +142,15 @@ static void dcp(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define DCP_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(dcp, MODE)
 
+static void isb(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *m = cpu_mem_addr(cpu, mode);
+  uint8_t c = (cpu->registers.flags & CPU_STATUS_FLAG_CARRY) ? 0 : 1;
+  *m += 1;
+  add_carry(cpu, (~*m), 1 - c);
+}
+
+#define ISB_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(isb, MODE)
+
 static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read_u8(cpu, mode);
   cpu->registers.a &= m;
@@ -774,4 +783,12 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xcf] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0xdf] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   [0xdb] = DCP_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+
+  [0xe7] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xf7] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0xe3] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0xf3] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  [0xef] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xff] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0xfb] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
 };
