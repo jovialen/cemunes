@@ -393,6 +393,13 @@ static void sty(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define STY_INSTRUCTION(MODE) CPU_INSTRUCTION(sty, MODE)
 
+static void sax(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t ax = cpu->registers.a & cpu->registers.x;
+  cpu_mem_write_u8(cpu, mode, ax);
+}
+
+#define SAX_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(sax, MODE)
+
 static void tax(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.x = cpu->registers.a;
   update_negative_zero_registers(cpu, cpu->registers.x);
@@ -738,4 +745,9 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xb3] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
   [0xaf] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0xbf] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+
+  [0x87] = SAX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x97] = SAX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_Y),
+  [0x83] = SAX_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0x8f] = SAX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
 };
