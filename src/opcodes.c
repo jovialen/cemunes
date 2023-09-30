@@ -368,6 +368,13 @@ static void ldy(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define LDY_INSTRUCTION(MODE) CPU_INSTRUCTION(ldy, MODE)
 
+static void lax(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.a = cpu->registers.x = cpu_mem_read_u8(cpu, mode);
+  update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define LAX_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(lax, MODE)
+
 static void sta(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu_mem_write_u8(cpu, mode, cpu->registers.a);
 }
@@ -724,4 +731,11 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x28] = PLP_INSTRUCTION(),
 
   [0x40] = RTI_INSTRUCTION(),
+
+  [0xa7] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0xb7] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_Y),
+  [0xa3] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0xb3] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  [0xaf] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0xbf] = LAX_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
 };
