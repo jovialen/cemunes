@@ -167,6 +167,25 @@ static void slo(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define SLO_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(slo, MODE)
 
+static void rla(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *m = cpu_mem_addr(cpu, mode);
+  uint8_t carry = cpu->registers.flags & CPU_STATUS_FLAG_CARRY;
+
+  if (*m & (1 << 7)) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  *m <<= 1;
+  *m |= carry;
+
+  cpu->registers.a &= *m;
+  update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define RLA_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(rla, MODE)
+
 static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read_u8(cpu, mode);
   cpu->registers.a &= m;
@@ -815,4 +834,12 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x0f] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0x1f] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   [0x1b] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+
+  [0x27] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x37] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x23] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0x33] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  [0x2f] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x3f] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x3b] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
 };
