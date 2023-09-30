@@ -151,6 +151,22 @@ static void isb(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define ISB_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(isb, MODE)
 
+static void slo(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *m = cpu_mem_addr(cpu, mode);
+
+  if (*m & (1 << 7)) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  *m *= 2;
+  cpu->registers.a |= *m;
+  update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define SLO_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(slo, MODE)
+
 static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read_u8(cpu, mode);
   cpu->registers.a &= m;
@@ -791,4 +807,12 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0xef] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0xff] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   [0xfb] = ISB_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+
+  [0x07] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x17] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x03] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0x13] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  [0x0f] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x1f] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x1b] = SLO_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
 };
