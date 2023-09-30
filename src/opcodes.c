@@ -256,11 +256,11 @@ static void bpl(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define BPL_INSTRUCTION() CPU_INSTRUCTION(bpl, CPU_ADDRESSING_MODE_RELATIVE)
 
-static void bvp(cpu_t *cpu, cpu_addressing_mode_t mode) {
+static void bvc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   branch(cpu, !(cpu->registers.flags & CPU_STATUS_FLAG_OVERFLOW));
 }
 
-#define BVP_INSTRUCTION() CPU_INSTRUCTION(bvp, CPU_ADDRESSING_MODE_RELATIVE)
+#define BVC_INSTRUCTION() CPU_INSTRUCTION(bvc, CPU_ADDRESSING_MODE_RELATIVE)
 
 static void bvs(cpu_t *cpu, cpu_addressing_mode_t mode) {
   branch(cpu, cpu->registers.flags & CPU_STATUS_FLAG_OVERFLOW);
@@ -684,7 +684,7 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x30] = BMI_INSTRUCTION(),
   [0xd0] = BNE_INSTRUCTION(),
   [0x10] = BPL_INSTRUCTION(),
-  [0x50] = BVP_INSTRUCTION(),
+  [0x50] = BVC_INSTRUCTION(),
   [0x70] = BVS_INSTRUCTION(),
   
   [0x18] = CLC_INSTRUCTION(),
