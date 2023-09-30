@@ -10,25 +10,25 @@ static uint8_t fetch_op(cpu_t *cpu) {
   return cpu_mem_read_u8(cpu, CPU_ADDRESSING_MODE_IMMEDIATE);
 }
 
-static uint16_t get_address(cpu_t *cpu, uint16_t base, cpu_addressing_mode_t mode) {
+static uint16_t get_address(cpu_t *cpu, uint16_t pc, cpu_addressing_mode_t mode) {
   switch (mode) {
   case CPU_ADDRESSING_MODE_IMMEDIATE:
-    return base;
+    return pc;
   case CPU_ADDRESSING_MODE_ZERO_PAGE:
-    return (uint16_t) bus_mem_read_u8(cpu->bus, base);
+    return (uint16_t) bus_mem_read_u8(cpu->bus, pc);
   case CPU_ADDRESSING_MODE_ZERO_PAGE_X:
-    return (uint16_t) (bus_mem_read_u8(cpu->bus, base) + cpu->registers.x) % 0x100;
+    return (uint16_t) (bus_mem_read_u8(cpu->bus, pc) + cpu->registers.x) % 0x100;
   case CPU_ADDRESSING_MODE_ZERO_PAGE_Y:
-    return (uint16_t) (bus_mem_read_u8(cpu->bus, base) + cpu->registers.y) % 0x100;
+    return (uint16_t) (bus_mem_read_u8(cpu->bus, pc) + cpu->registers.y) % 0x100;
   case CPU_ADDRESSING_MODE_ABSOLUTE:
   case CPU_ADDRESSING_MODE_ABSOLUTE_ADDR:
-    return bus_mem_read_u16(cpu->bus, base);
+    return bus_mem_read_u16(cpu->bus, pc);
   case CPU_ADDRESSING_MODE_ABSOLUTE_X:
-    return bus_mem_read_u16(cpu->bus, base) + cpu->registers.x;
+    return bus_mem_read_u16(cpu->bus, pc) + cpu->registers.x;
   case CPU_ADDRESSING_MODE_ABSOLUTE_Y:
-    return bus_mem_read_u16(cpu->bus, base) + cpu->registers.y;
+    return bus_mem_read_u16(cpu->bus, pc) + cpu->registers.y;
   case CPU_ADDRESSING_MODE_INDIRECT: {
-    uint16_t addr = bus_mem_read_u16(cpu->bus, base);
+    uint16_t addr = bus_mem_read_u16(cpu->bus, pc);
     if ((addr & 0xFF) == 0xFF) {
       uint16_t low = (uint16_t) bus_mem_read_u8(cpu->bus, addr);
       uint16_t high = (uint16_t) bus_mem_read_u8(cpu->bus, addr & 0xFF00);
@@ -37,11 +37,11 @@ static uint16_t get_address(cpu_t *cpu, uint16_t base, cpu_addressing_mode_t mod
     return bus_mem_read_u16(cpu->bus, addr);
   }
   case CPU_ADDRESSING_MODE_INDIRECT_X: {
-    uint8_t addr = base + cpu->registers.x;
+    uint8_t addr = bus_mem_read_u8(cpu->bus, pc) + cpu->registers.x;
     return bus_mem_read_u16_zero_page(cpu->bus, addr);
   }
   case CPU_ADDRESSING_MODE_INDIRECT_Y: {
-    uint16_t addr = bus_mem_read_u16_zero_page(cpu->bus, base);
+    uint16_t addr = bus_mem_read_u16_zero_page(cpu->bus, bus_mem_read_u8(cpu->bus, pc));
     return addr + cpu->registers.y;
   }
   case CPU_ADDRESSING_MODE_IMPLIED:
