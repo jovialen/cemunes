@@ -12,28 +12,9 @@
 #define NOP_INSTRUCTION() { .valid = true, .unofficial = false, .name = "nop", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
 #define UNOFFICIAL_NOP_INSTRUCTION() { .valid = true, .unofficial = true, .name = "nop", .func = 0, .addr_mode = CPU_ADDRESSING_MODE_IMPLIED }
 
-static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
-  if (a == 0) {
-    sez(cpu);
-  } else {
-    clz(cpu);
-  }
-
-  if (a & CPU_STATUS_FLAG_NEGATIVE) {
-    sen(cpu);
-  } else {
-    cln(cpu);
-  }
-}
-
 static void sez(cpu_t *cpu) {
   cpu->registers.flags |= CPU_STATUS_FLAG_ZERO;
   log_trace("setting zero flag");
-}
-
-static void sev(cpu_t *cpu, cpu_addressing_mode_t mode) {
-    cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
-    log_trace("setting overflow flag");
 }
 
 static void clz(cpu_t *cpu) {
@@ -49,6 +30,25 @@ static void sen(cpu_t *cpu) {
 static void cln(cpu_t *cpu) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_NEGATIVE;
   log_trace("clearing negative flag");
+}
+
+static void update_negative_zero_registers(cpu_t *cpu, uint8_t a) {
+  if (a == 0) {
+    sez(cpu);
+  } else {
+    clz(cpu);
+  }
+
+  if (a & CPU_STATUS_FLAG_NEGATIVE) {
+    sen(cpu);
+  } else {
+    cln(cpu);
+  }
+}
+
+static void sev(cpu_t *cpu, cpu_addressing_mode_t mode) {
+    cpu->registers.flags |= CPU_STATUS_FLAG_OVERFLOW;
+    log_trace("setting overflow flag");
 }
 
 static void sec(cpu_t *cpu, cpu_addressing_mode_t mode) {
@@ -78,6 +78,13 @@ static void clc(cpu_t *cpu, cpu_addressing_mode_t mode) {
 }
 
 #define CLC_INSTRUCTION() CPU_INSTRUCTION(clc, CPU_ADDRESSING_MODE_IMPLIED)
+
+static void clv(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
+  log_trace("clearing overflow flag");
+}
+
+#define CLV_INSTRUCTION() CPU_INSTRUCTION(clv, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void adc(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t b = cpu_mem_read_u8(cpu, mode) + (cpu->registers.flags & CPU_STATUS_FLAG_CARRY);
@@ -227,13 +234,23 @@ static void bit(cpu_t *cpu, cpu_addressing_mode_t mode) {
 	uint8_t m = cpu_mem_read_u8(cpu, mode);
 	cpu->registers.a &= m;
 
-	if (m & (1 << 6)) {
+  if (cpu->registers.a == 0) {
+    sez(cpu);
+  } else {
+    clz(cpu);
+  }
+
+	if (m & CPU_STATUS_FLAG_OVERFLOW) {
         sev(cpu, CPU_ADDRESSING_MODE_IMPLIED);
 	} else {
         clv(cpu, CPU_ADDRESSING_MODE_IMPLIED);
 	}
-	
-	update_negative_zero_registers(cpu, cpu->registers.a);
+
+	if (m & CPU_STATUS_FLAG_NEGATIVE) {
+        sen(cpu);
+	} else {
+        cln(cpu);
+	}
 }
 
 #define BIT_INSTRUCTION(MODE) CPU_INSTRUCTION(bit, MODE)
@@ -298,17 +315,10 @@ static void cld(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 static void cli(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags &= ~CPU_STATUS_FLAG_INT_DISABLE;
-  log_trace("clearing interupt disable flag")
+  log_trace("clearing interupt disable flag");
 }
 
 #define CLI_INSTRUCTION() CPU_INSTRUCTION(cli, CPU_ADDRESSING_MODE_IMPLIED)
-
-static void clv(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu->registers.flags &= ~CPU_STATUS_FLAG_OVERFLOW;
-  log_trace("clearing overflow flag");
-}
-
-#define CLV_INSTRUCTION() CPU_INSTRUCTION(clv, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void compare(cpu_t *cpu, cpu_addressing_mode_t mode, uint8_t a) {
   uint8_t m = cpu_mem_read_u8(cpu, mode);
@@ -488,7 +498,9 @@ static void pha(cpu_t *cpu, cpu_addressing_mode_t mode) {
 #define PHA_INSTRUCTION() CPU_INSTRUCTION(pha, CPU_ADDRESSING_MODE_IMPLIED)
 
 static void php(cpu_t *cpu, cpu_addressing_mode_t mode) {
-  cpu_stack_push_u8(cpu, cpu->registers.flags);
+  uint8_t flags = cpu->registers.flags;
+  flags |= CPU_STATUS_FLAG_B1 | CPU_STATUS_FLAG_B2;
+  cpu_stack_push_u8(cpu, flags);
 }
 
 #define PHP_INSTRUCTION() CPU_INSTRUCTION(php, CPU_ADDRESSING_MODE_IMPLIED)
@@ -502,6 +514,8 @@ static void pla(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 static void plp(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.flags = cpu_stack_pop_u8(cpu);
+  cpu->registers.flags &= ~CPU_STATUS_FLAG_B1;
+  cpu->registers.flags |= CPU_STATUS_FLAG_B2;
 }
 
 #define PLP_INSTRUCTION() CPU_INSTRUCTION(plp, CPU_ADDRESSING_MODE_IMPLIED)
