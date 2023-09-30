@@ -416,7 +416,6 @@ static void tsx(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 static void txs(cpu_t *cpu, cpu_addressing_mode_t mode) {
   cpu->registers.s = cpu->registers.x;
-  update_negative_zero_registers(cpu, cpu->registers.s);
 }
 
 #define TXS_INSTRUCTION() CPU_INSTRUCTION(txs, CPU_ADDRESSING_MODE_IMPLIED)
