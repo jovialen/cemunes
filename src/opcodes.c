@@ -186,6 +186,22 @@ static void rla(cpu_t *cpu, cpu_addressing_mode_t mode) {
 
 #define RLA_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(rla, MODE)
 
+static void sre(cpu_t *cpu, cpu_addressing_mode_t mode) {
+  uint8_t *m = cpu_mem_addr(cpu, mode);
+
+  if (*m & (1 << 0)) {
+    sec(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  } else {
+    clc(cpu, CPU_ADDRESSING_MODE_IMPLIED);
+  }
+
+  *m /= 2;
+  cpu->registers.a ^= *m;
+  update_negative_zero_registers(cpu, cpu->registers.a);
+}
+
+#define SRE_INSTRUCTION(MODE) UNOFFICIAL_CPU_INSTRUCTION(sre, MODE)
+
 static void and(cpu_t *cpu, cpu_addressing_mode_t mode) {
   uint8_t m = cpu_mem_read_u8(cpu, mode);
   cpu->registers.a &= m;
@@ -842,4 +858,12 @@ const cpu_instruction_t INSTRUCTIONS[INSTRUCTION_COUNT] = {
   [0x2f] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
   [0x3f] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
   [0x3b] = RLA_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
+
+  [0x47] = SRE_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE),
+  [0x57] = SRE_INSTRUCTION(CPU_ADDRESSING_MODE_ZERO_PAGE_X),
+  [0x43] = SRE_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_X),
+  [0x53] = SRE_INSTRUCTION(CPU_ADDRESSING_MODE_INDIRECT_Y),
+  [0x4f] = SRE_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE),
+  [0x5f] = SRE_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_X),
+  [0x5b] = SRE_INSTRUCTION(CPU_ADDRESSING_MODE_ABSOLUTE_Y),
 };
